@@ -1,2 +1,2 @@
-# arciilab.github.io
+# arciilab
 minigames made by arcii
