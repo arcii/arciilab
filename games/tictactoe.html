@@ -1,0 +1,251 @@
+<div class="ttt-container">
+
+    <div class="ttt-status" id="ttt-status">
+        X의 차례
+    </div>
+
+    <div class="ttt-board" id="ttt-board"></div>
+
+    <button
+        class="ttt-reset"
+        id="ttt-reset"
+    >
+        다시 시작
+    </button>
+
+</div>
+
+
+<style>
+
+.ttt-container {
+    width: min(500px, 100%);
+
+    margin: 0 auto;
+
+    text-align: center;
+}
+
+.ttt-status {
+    margin-bottom: 20px;
+
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.ttt-board {
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, 1fr);
+
+    width: 100%;
+
+    aspect-ratio: 1;
+
+    gap: 8px;
+}
+
+.ttt-cell {
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid #333;
+    border-radius: 10px;
+
+    background: #181818;
+
+    font-size: clamp(40px, 10vw, 70px);
+    font-weight: 800;
+
+    cursor: pointer;
+
+    user-select: none;
+}
+
+.ttt-cell:hover {
+    background: #242424;
+}
+
+.ttt-reset {
+    margin-top: 20px;
+
+    padding: 12px 20px;
+
+    border: 1px solid #333;
+    border-radius: 10px;
+
+    background: #222;
+    color: white;
+
+    font-size: 16px;
+
+    cursor: pointer;
+}
+
+.ttt-reset:hover {
+    background: #303030;
+}
+
+</style>
+
+
+<script>
+
+(() => {
+
+    const board =
+        document.getElementById("ttt-board");
+
+    const status =
+        document.getElementById("ttt-status");
+
+    const resetButton =
+        document.getElementById("ttt-reset");
+
+
+    let cells = [];
+
+    let currentPlayer = "X";
+
+    let gameOver = false;
+
+
+    const winningPatterns = [
+
+        [0, 1, 2],
+        [3, 4, 5],
+        [6, 7, 8],
+
+        [0, 3, 6],
+        [1, 4, 7],
+        [2, 5, 8],
+
+        [0, 4, 8],
+        [2, 4, 6]
+
+    ];
+
+
+    function createBoard() {
+
+        board.innerHTML = "";
+
+        cells = [];
+
+        currentPlayer = "X";
+
+        gameOver = false;
+
+        status.textContent =
+            "X의 차례";
+
+
+        for (let i = 0; i < 9; i++) {
+
+            const cell =
+                document.createElement("div");
+
+
+            cell.className =
+                "ttt-cell";
+
+
+            cell.addEventListener(
+                "click",
+                () => play(i)
+            );
+
+
+            board.appendChild(cell);
+
+            cells.push(cell);
+        }
+    }
+
+
+    function play(index) {
+
+        if (gameOver) {
+            return;
+        }
+
+
+        if (cells[index].textContent !== "") {
+            return;
+        }
+
+
+        cells[index].textContent =
+            currentPlayer;
+
+
+        if (checkWin()) {
+
+            status.textContent =
+                `${currentPlayer} 승리!`;
+
+            gameOver = true;
+
+            return;
+        }
+
+
+        if (cells.every(
+            cell => cell.textContent !== ""
+        )) {
+
+            status.textContent =
+                "무승부!";
+
+            gameOver = true;
+
+            return;
+        }
+
+
+        currentPlayer =
+            currentPlayer === "X"
+                ? "O"
+                : "X";
+
+
+        status.textContent =
+            `${currentPlayer}의 차례`;
+    }
+
+
+    function checkWin() {
+
+        return winningPatterns.some(
+            pattern => {
+
+                const [a, b, c] =
+                    pattern;
+
+
+                return (
+                    cells[a].textContent &&
+                    cells[a].textContent ===
+                        cells[b].textContent &&
+                    cells[a].textContent ===
+                        cells[c].textContent
+                );
+            }
+        );
+    }
+
+
+    resetButton.addEventListener(
+        "click",
+        createBoard
+    );
+
+
+    createBoard();
+
+})();
+
+</script>
