@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Typing Game</title>
+    <meta name="description" content="주어진 문장을 제한 시간 안에 얼마나 빠르고 정확하게 입력하는지 측정하는 타이핑 게임">
+
+    <style>
+        .typing-game {
+            width: min(760px, 100%);
+            margin: 0 auto;
+        }
+
+        .typing-info {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .typing-stat {
+            flex: 1;
+            padding: 16px;
+            border: 1px solid #333;
+            border-radius: 12px;
+            background: #181818;
+            text-align: center;
+        }
+
+        .typing-stat strong {
+            display: block;
+            margin-top: 6px;
+            font-size: 28px;
+        }
+
+        .typing-text {
+            margin-bottom: 18px;
+            padding: 24px;
+            border: 1px solid #333;
+            border-radius: 14px;
+            background: #181818;
+            font-size: 22px;
+            line-height: 1.7;
+            word-break: keep-all;
+        }
+
+        .typing-input {
+            width: 100%;
+            min-height: 120px;
+            padding: 18px;
+            resize: vertical;
+            border: 1px solid #444;
+            border-radius: 12px;
+            outline: none;
+            background: #111;
+            color: #fff;
+            font: inherit;
+            font-size: 20px;
+        }
+
+        .typing-input:focus {
+            border-color: #777;
+        }
+
+        .typing-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 14px;
+        }
+
+        .typing-button {
+            padding: 12px 18px;
+            border: 1px solid #333;
+            border-radius: 10px;
+            background: #222;
+            color: #fff;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .typing-button:hover {
+            background: #303030;
+        }
+
+        .typing-result {
+            min-height: 28px;
+            margin-top: 18px;
+            text-align: center;
+            color: #aaa;
+        }
+
+        @media (max-width: 600px) {
+            .typing-info {
+                flex-direction: column;
+            }
+
+            .typing-text {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="typing-game">
+        <div class="typing-info">
+            <div class="typing-stat">
+                남은 시간
+                <strong id="typing-time">30</strong>
+            </div>
+            <div class="typing-stat">
+                정확도
+                <strong id="typing-accuracy">100%</strong>
+            </div>
+            <div class="typing-stat">
+                WPM
+                <strong id="typing-wpm">0</strong>
+            </div>
+        </div>
+
+        <div class="typing-text" id="typing-text"></div>
+
+        <textarea
+            id="typing-input"
+            class="typing-input"
+            placeholder="여기에 위 문장을 그대로 입력하세요."
+            spellcheck="false"
+            autocomplete="off"
+        ></textarea>
+
+        <div class="typing-buttons">
+            <button class="typing-button" id="typing-start">게임 시작</button>
+            <button class="typing-button" id="typing-reset">다시 시작</button>
+        </div>
+
+        <div class="typing-result" id="typing-result"></div>
+    </div>
+
+    <script>
+    (() => {
+        const sentences = [
+            "작은 게임 하나를 완성하는 것부터 시작해 봅시다.",
+            "오늘의 목표는 어제보다 조금 더 빠르게 입력하는 것입니다.",
+            "꾸준히 연습하면 타이핑 속도와 정확도를 함께 높일 수 있습니다.",
+            "새로운 게임을 하나씩 추가하면서 나만의 미니게임 사이트를 만들어 봅시다."
+        ];
+
+        const timeEl = document.getElementById("typing-time");
+        const accuracyEl = document.getElementById("typing-accuracy");
+        const wpmEl = document.getElementById("typing-wpm");
+        const textEl = document.getElementById("typing-text");
+        const inputEl = document.getElementById("typing-input");
+        const startButton = document.getElementById("typing-start");
+        const resetButton = document.getElementById("typing-reset");
+        const resultEl = document.getElementById("typing-result");
+
+        const GAME_TIME = 30;
+
+        let target = "";
+        let remaining = GAME_TIME;
+        let timer = null;
+        let started = false;
+        let startTime = 0;
+
+        function chooseSentence() {
+            target = sentences[Math.floor(Math.random() * sentences.length)];
+            textEl.textContent = target;
+        }
+
+        function reset() {
+            clearInterval(timer);
+            timer = null;
+            remaining = GAME_TIME;
+            started = false;
+            startTime = 0;
+
+            timeEl.textContent = remaining;
+            accuracyEl.textContent = "100%";
+            wpmEl.textContent = "0";
+            inputEl.value = "";
+            inputEl.disabled = true;
+            resultEl.textContent = "";
+
+            chooseSentence();
+        }
+
+        function start() {
+            if (started) return;
+
+            started = true;
+            startTime = Date.now();
+            inputEl.disabled = false;
+            inputEl.focus();
+
+            timer = setInterval(() => {
+                remaining--;
+                timeEl.textContent = remaining;
+                updateStats();
+
+                if (remaining <= 0) {
+                    finish();
+                }
+            }, 1000);
+        }
+
+        function updateStats() {
+            const typed = inputEl.value;
+            let correct = 0;
+
+            for (let i = 0; i < typed.length; i++) {
+                if (typed[i] === target[i]) correct++;
+            }
+
+            const accuracy =
+                typed.length === 0
+                    ? 100
+                    : Math.round((correct / typed.length) * 100);
+
+            accuracyEl.textContent = `${accuracy}%`;
+
+            const elapsedMinutes =
+                Math.max((Date.now() - startTime) / 60000, 1 / 60);
+
+            const words = correct / 5;
+            const wpm = Math.round(words / elapsedMinutes);
+
+            wpmEl.textContent = String(wpm);
+        }
+
+        function finish() {
+            clearInterval(timer);
+            timer = null;
+            started = false;
+            inputEl.disabled = true;
+            updateStats();
+
+            resultEl.textContent =
+                `시간 종료! 최종 WPM은 ${wpmEl.textContent}, 정확도는 ${accuracyEl.textContent}입니다.`;
+        }
+
+        startButton.addEventListener("click", start);
+        resetButton.addEventListener("click", reset);
+        inputEl.addEventListener("input", () => {
+            if (!started) return;
+
+            updateStats();
+
+            if (inputEl.value === target) {
+                finish();
+                resultEl.textContent =
+                    `문장 완성! ${wpmEl.textContent} WPM / 정확도 ${accuracyEl.textContent}`;
+            }
+        });
+
+        reset();
+    })();
+    </script>
+</body>
+</html>
