@@ -1,0 +1,231 @@
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+
+    min-height: 100%;
+
+    font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+
+    background: #111;
+    color: #fff;
+}
+
+body {
+    min-height: 100vh;
+}
+
+button,
+a {
+    font-family: inherit;
+}
+
+
+/* =========================
+   전체 컨테이너
+========================= */
+
+.site-container {
+    width: min(1100px, calc(100% - 40px));
+    margin: 0 auto;
+    padding: 60px 0;
+}
+
+
+/* =========================
+   헤더
+========================= */
+
+.site-header {
+    margin-bottom: 50px;
+}
+
+.site-title {
+    margin: 0;
+
+    font-size: 42px;
+    font-weight: 800;
+    letter-spacing: -1px;
+}
+
+.site-description {
+    margin-top: 12px;
+
+    color: #999;
+    font-size: 16px;
+}
+
+
+/* =========================
+   게임 목록
+========================= */
+
+.game-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+    gap: 20px;
+}
+
+
+/* =========================
+   게임 카드
+========================= */
+
+.game-card {
+    display: block;
+
+    padding: 28px;
+
+    min-height: 150px;
+
+    border: 1px solid #292929;
+    border-radius: 16px;
+
+    background: #181818;
+
+    color: white;
+    text-decoration: none;
+
+    transition:
+        transform 0.15s ease,
+        border-color 0.15s ease,
+        background 0.15s ease;
+}
+
+.game-card:hover {
+    transform: translateY(-4px);
+
+    border-color: #555;
+
+    background: #202020;
+}
+
+.game-card-title {
+    margin: 0 0 10px;
+
+    font-size: 24px;
+}
+
+.game-card-description {
+    margin: 0;
+
+    color: #999;
+
+    line-height: 1.5;
+}
+
+
+/* =========================
+   게임 화면
+========================= */
+
+.game-page {
+    width: min(900px, calc(100% - 40px));
+
+    margin: 0 auto;
+
+    padding: 40px 0;
+}
+
+.game-page-header {
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 20px;
+
+    margin-bottom: 30px;
+}
+
+.game-page-title {
+    margin: 0;
+
+    font-size: 36px;
+}
+
+
+/* =========================
+   홈 버튼
+========================= */
+
+.home-button {
+    display: inline-block;
+
+    padding: 10px 16px;
+
+    border-radius: 10px;
+
+    background: #222;
+
+    color: white;
+
+    text-decoration: none;
+
+    border: 1px solid #333;
+}
+
+.home-button:hover {
+    background: #2d2d2d;
+}
+
+
+/* =========================
+   로딩 / 오류
+========================= */
+
+.loading,
+.error-message {
+    padding: 80px 20px;
+
+    text-align: center;
+
+    color: #888;
+}
+
+
+/* =========================
+   모바일
+========================= */
+
+@media (max-width: 700px) {
+
+    .site-container {
+        width: min(100% - 24px, 1100px);
+
+        padding: 40px 0;
+    }
+
+    .site-title {
+        font-size: 32px;
+    }
+
+    .game-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .game-page {
+        width: calc(100% - 24px);
+    }
+
+    .game-page-header {
+        align-items: flex-start;
+
+        flex-direction: column;
+    }
+
+    .game-page-title {
+        font-size: 30px;
+    }
+}
