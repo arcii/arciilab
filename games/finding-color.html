@@ -1,0 +1,148 @@
+<div id="fc-game">
+<style>
+#fc-game{--bg:#111;--panel:#191919;--border:#383838;--text:#f5f5f5;--muted:#aaa;width:min(720px,calc(100vw - 40px));margin:0 auto;padding:20px 0 40px;color:var(--text);font-family:Arial,sans-serif}
+#fc-game *{box-sizing:border-box}
+#fc-game .fc-title{text-align:center;font-size:34px;font-weight:700;margin:0 0 28px}
+#fc-game .fc-colors{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:32px}
+#fc-game .fc-label{display:block;margin-bottom:9px;color:var(--muted);font-size:14px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+#fc-game .fc-color-box{width:100%;aspect-ratio:2/1;min-height:145px;border:1px solid var(--border);border-radius:14px;background:#222}
+#fc-game .fc-controls{display:flex;flex-direction:column;gap:20px}
+#fc-game .fc-control{display:grid;grid-template-columns:105px minmax(0,1fr) 34px 34px 70px;align-items:center;gap:10px}
+#fc-game .fc-name{font-size:13px;font-weight:700;letter-spacing:.05em}
+#fc-game .fc-slider{appearance:none;width:100%;height:14px;border:1px solid #444;border-radius:999px;outline:none;cursor:pointer}
+#fc-game .fc-slider::-webkit-slider-thumb{appearance:none;width:22px;height:22px;border:2px solid #111;border-radius:50%;background:#fff;box-shadow:0 0 0 1px rgba(255,255,255,.7)}
+#fc-game .fc-slider::-moz-range-thumb{width:19px;height:19px;border:2px solid #111;border-radius:50%;background:#fff}
+#fc-game .fc-step{width:34px;height:34px;border:1px solid #444;border-radius:8px;background:#202020;color:#fff;font-size:18px;cursor:pointer}
+#fc-game .fc-step:hover{background:#2c2c2c}
+#fc-game .fc-value{text-align:right;font-variant-numeric:tabular-nums;font-size:15px;font-weight:700}
+#fc-game .fc-actions{display:flex;justify-content:center;gap:10px;margin-top:30px}
+#fc-game .fc-button{min-width:120px;padding:12px 20px;border:1px solid #444;border-radius:10px;background:#222;color:#fff;font-size:16px;font-weight:700;cursor:pointer}
+#fc-game .fc-button:hover{background:#2d2d2d}
+#fc-game .fc-primary{background:#fff;color:#111;border-color:#fff}
+#fc-game .fc-result{display:none;margin-top:28px;padding:24px;border:1px solid #3d3d3d;border-radius:14px;background:#191919}
+#fc-game .fc-result.show{display:block;animation:fc-in .28s ease-out}
+@keyframes fc-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+#fc-game .fc-score{text-align:center;margin-bottom:22px}
+#fc-game .fc-score-number{font-size:64px;line-height:1;font-weight:800}
+#fc-game .fc-grade{margin-top:8px;font-size:28px;font-weight:800}
+#fc-game .fc-result-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+#fc-game .fc-result-card{padding:16px;border:1px solid #333;border-radius:10px;background:#141414}
+#fc-game .fc-result-card h3{margin:0 0 12px;font-size:14px;color:#aaa}
+#fc-game .fc-result-values{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center}
+#fc-game .fc-result-values strong{display:block;margin-bottom:5px;font-size:12px;color:#888}
+#fc-game .fc-result-values span{font-size:15px;font-weight:700}
+#fc-game .fc-difference{margin-top:16px;padding:14px;border-radius:10px;background:#222;text-align:center;color:#ddd;font-size:14px;line-height:1.6}
+@media(max-width:620px){#fc-game{width:calc(100vw - 28px)}#fc-game .fc-title{font-size:28px}#fc-game .fc-color-box{min-height:105px}#fc-game .fc-control{grid-template-columns:70px minmax(0,1fr) 30px 30px 60px;gap:7px}#fc-game .fc-result-grid{grid-template-columns:1fr}}
+</style>
+
+<div class="fc-title">Finding Color</div>
+
+<div class="fc-colors">
+  <div><span class="fc-label">Target</span><div id="fc-target" class="fc-color-box"></div></div>
+  <div><span class="fc-label">Your Color</span><div id="fc-user" class="fc-color-box"></div></div>
+</div>
+
+<div class="fc-controls">
+  <div class="fc-control">
+    <span class="fc-name">HUE</span>
+    <input id="fc-hue" class="fc-slider" type="range" min="0" max="359" value="0">
+    <button class="fc-step" data-id="fc-hue" data-step="-1" type="button">←</button>
+    <button class="fc-step" data-id="fc-hue" data-step="1" type="button">→</button>
+    <span id="fc-hue-value" class="fc-value">0°</span>
+  </div>
+  <div class="fc-control">
+    <span class="fc-name">SATURATION</span>
+    <input id="fc-sat" class="fc-slider" type="range" min="0" max="100" value="100">
+    <button class="fc-step" data-id="fc-sat" data-step="-1" type="button">←</button>
+    <button class="fc-step" data-id="fc-sat" data-step="1" type="button">→</button>
+    <span id="fc-sat-value" class="fc-value">100%</span>
+  </div>
+  <div class="fc-control">
+    <span class="fc-name">VALUE</span>
+    <input id="fc-val" class="fc-slider" type="range" min="0" max="100" value="100">
+    <button class="fc-step" data-id="fc-val" data-step="-1" type="button">←</button>
+    <button class="fc-step" data-id="fc-val" data-step="1" type="button">→</button>
+    <span id="fc-val-value" class="fc-value">100%</span>
+  </div>
+</div>
+
+<div class="fc-actions">
+  <button id="fc-check" class="fc-button fc-primary" type="button">Check</button>
+  <button id="fc-reset" class="fc-button" type="button">Again</button>
+</div>
+
+<div id="fc-result" class="fc-result">
+  <div class="fc-score"><div id="fc-score-number" class="fc-score-number">0</div><div id="fc-grade" class="fc-grade">GRADE E</div></div>
+  <div class="fc-result-grid">
+    <div class="fc-result-card"><h3>TARGET</h3><div id="fc-target-values" class="fc-result-values"></div></div>
+    <div class="fc-result-card"><h3>YOUR SUBMISSION</h3><div id="fc-user-values" class="fc-result-values"></div></div>
+  </div>
+  <div id="fc-difference" class="fc-difference"></div>
+</div>
+
+<script>
+(() => {
+  const root=document.getElementById('fc-game'); if(!root)return;
+  const $=s=>root.querySelector(s);
+  const targetEl=$('#fc-target'),userEl=$('#fc-user');
+  const hue=$('#fc-hue'),sat=$('#fc-sat'),val=$('#fc-val');
+  const target={h:0,s:0,v:0};
+
+  function hsv(h,s,v){
+    s/=100;v/=100;const c=v*s,x=c*(1-Math.abs((h/60)%2-1)),m=v-c;
+    let r=0,g=0,b=0;
+    if(h<60){r=c;g=x}else if(h<120){r=x;g=c}else if(h<180){g=c;b=x}
+    else if(h<240){g=x;b=c}else if(h<300){r=x;b=c}else{r=c;b=x}
+    return `rgb(${Math.round((r+m)*255)},${Math.round((g+m)*255)},${Math.round((b+m)*255)})`;
+  }
+  function user(){return{h:+hue.value,s:+sat.value,v:+val.value}}
+  function update(){
+    const u=user();
+    $('#fc-hue-value').textContent=u.h+'°';
+    $('#fc-sat-value').textContent=u.s+'%';
+    $('#fc-val-value').textContent=u.v+'%';
+    userEl.style.background=hsv(u.h,u.s,u.v);
+    hue.style.background='linear-gradient(to right,hsl(0 100% 50%),hsl(60 100% 50%),hsl(120 100% 50%),hsl(180 100% 50%),hsl(240 100% 50%),hsl(300 100% 50%),hsl(359 100% 50%))';
+    sat.style.background=`linear-gradient(to right,${hsv(u.h,0,u.v)},${hsv(u.h,100,u.v)})`;
+    val.style.background='linear-gradient(to right,#000,#fff)';
+  }
+  function newTarget(){
+    target.h=Math.floor(Math.random()*360);
+    target.s=Math.floor(Math.random()*101);
+    target.v=Math.floor(Math.random()*101);
+    targetEl.style.background=hsv(target.h,target.s,target.v);
+  }
+  function diffHue(a,b){const d=Math.abs(a-b);return Math.min(d,360-d)}
+  function score(u){
+    const h=1-diffHue(u.h,target.h)/180;
+    const s=1-Math.abs(u.s-target.s)/100;
+    const v=1-Math.abs(u.v-target.v)/100;
+    return Math.round(Math.max(0,Math.min(100,(h+s+v)/3*100)));
+  }
+  function grade(n){if(n===100)return'V';if(n>=95)return'S';if(n>=85)return'A';if(n>=75)return'B';if(n>=65)return'C';if(n>=50)return'D';return'E'}
+  function vals(x){return`<div><strong>H</strong><span>${x.h}°</span></div><div><strong>S</strong><span>${x.s}%</span></div><div><strong>V</strong><span>${x.v}%</span></div>`}
+  function check(){
+    const u=user(),n=score(u);
+    $('#fc-score-number').textContent=n;
+    $('#fc-grade').textContent='GRADE '+grade(n);
+    $('#fc-target-values').innerHTML=vals(target);
+    $('#fc-user-values').innerHTML=vals(u);
+    $('#fc-difference').innerHTML=`Difference — HUE <strong>${diffHue(u.h,target.h)}°</strong> · SATURATION <strong>${Math.abs(u.s-target.s)}%</strong> · VALUE <strong>${Math.abs(u.v-target.v)}%</strong>`;
+    $('#fc-result').classList.add('show');
+  }
+  function reset(){
+    hue.value=0;sat.value=100;val.value=100;
+    $('#fc-result').classList.remove('show');
+    newTarget();update();
+  }
+  root.querySelectorAll('.fc-slider').forEach(x=>x.addEventListener('input',update));
+  root.querySelectorAll('.fc-step').forEach(b=>b.addEventListener('click',()=>{
+    const x=$('#'+b.dataset.id);
+    x.value=Math.max(+x.min,Math.min(+x.max,+x.value+ +b.dataset.step));update();
+  }));
+  $('#fc-check').addEventListener('click',check);
+  $('#fc-reset').addEventListener('click',reset);
+  reset();
+})();
+</script>
+</div>
