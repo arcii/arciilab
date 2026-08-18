@@ -28,6 +28,610 @@ html, body {
   overflow-x: hidden;
   overflow-y: auto;
 }
+
+/* ── SELECT SCREEN ── */
+#select-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100dvh;
+  padding: 2rem 1rem;
+}
+#select-screen.hide { display: none; }
+
+.title {
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -1px;
+  text-align: center;
+  margin-bottom: .25rem;
+  background: none;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.subtitle { font-size: .85rem; color: var(--text-muted); margin-bottom: 2.5rem; letter-spacing: 2px; text-transform: uppercase; }
+
+.puzzle-cards { display: flex; flex-direction: column; gap: 1rem; width: 100%; max-width: 360px; }
+.puzzle-card {
+  background: var(--surface);
+  border: 1.5px solid #3a3a3a;
+  border-radius: 16px;
+  padding: 1.25rem 1.5rem;
+  cursor: pointer;
+  transition: transform .15s, border-color .15s, background .15s;
+  display: flex; align-items: center; gap: 1rem;
+  user-select: none;
+}
+.puzzle-card:active { transform: scale(0.97); }
+.puzzle-card:hover { border-color: var(--accent); background: #242424; }
+.puzzle-card .icon { font-size: 2rem; flex-shrink: 0; }
+.puzzle-card .info h3 { font-size: 1rem; font-weight: 600; margin-bottom: .25rem; }
+.puzzle-card .info p { font-size: .8rem; color: var(--text-muted); line-height: 1.4; }
+
+/* ── GAME SCREEN ── */
+#game-screen {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100dvh;
+  padding: 1rem 1rem 2rem;
+  gap: 0.6rem;
+}
+#game-screen.show { display: flex; }
+
+.header {
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 0.5rem;
+}
+.back-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 8px;
+  user-select: none;
+}
+.back-btn:active { color: var(--text); }
+.game-title { font-size: 1rem; font-weight: 600; color: var(--text-muted); }
+.move-count { font-size: 0.9rem; color: var(--yellow-tile); font-weight: 700; }
+
+.btn-row { display: flex; gap: 10px; width: 100%; max-width: 340px; }
+.btn {
+  flex: 1;
+  padding: 0.65rem 0;
+  border: none;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  user-select: none;
+}
+.btn-mix   { background: #ffffff; color: #111111; }
+.btn-reset { background: var(--surface); color: var(--text); border: 1.5px solid #3a3a3a; }
+.btn:active { opacity: 0.75; transform: scale(0.96); }
+
+/* ── BOARD AREA ── */
+.board-area {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin-top: 0.5rem;
+}
+
+.arrows-h { 
+  display: flex;
+  gap: var(--gap);
+}
+.arrows-h .abtn { width: var(--cell); height: 34px; }
+
+.board-middle {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.arrows-v { 
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+}
+.arrows-v .abtn { width: 34px; height: var(--cell); }
+
+.abtn {
+  background: var(--surface);
+  border: 1.5px solid #3a3a3a;
+  border-radius: 8px;
+  color: var(--text-muted);
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  flex-shrink: 0;
+}
+.abtn:active { background: #333333; color: var(--text); transform: scale(0.92); }
+.abtn.invisible { opacity: 0; pointer-events: none; }
+
+/* ── GRID ── */
+.grid-container {
+  position: relative;
+  display: inline-block;
+}
+
+.grid {
+  display: grid;
+  gap: var(--gap);
+}
+
+/* Puzzle 1: 3x3 */
+.grid.p1 {
+  grid-template-columns: repeat(3, var(--cell));
+  grid-template-rows: repeat(3, var(--cell));
+}
+
+/* Puzzle 2: 3x3 + 1 extra (bottom right extension) */
+.grid.p2 {
+  grid-template-columns: repeat(3, var(--cell));
+  grid-template-rows: repeat(4, var(--cell));
+}
+
+/* Puzzle 3: 3x4 minus bottom-left */
+.grid.p3 {
+  grid-template-columns: repeat(3, var(--cell));
+  grid-template-rows: repeat(4, var(--cell));
+}
+
+.cell {
+  width: var(--cell);
+  height: var(--cell);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.cell.empty { opacity: 0; pointer-events: none; }
+.cell-face {
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
+  transition: background 0.25s;
+  box-shadow: inset 0 3px 6px rgba(255,255,255,0.18), inset 0 -3px 6px rgba(0,0,0,0.3);
+}
+.cell[data-f="W"] .cell-face { background: var(--white-tile); }
+.cell[data-f="Y"] .cell-face { background: var(--yellow-tile); }
+
+/* flip animations */
+@keyframes fRow { 0%{transform:rotateX(0)}50%{transform:rotateX(90deg)}100%{transform:rotateX(0)} }
+@keyframes fCol { 0%{transform:rotateY(0)}50%{transform:rotateY(90deg)}100%{transform:rotateY(0)} }
+.fx-row { animation: fRow 0.28s ease both; }
+.fx-col { animation: fCol 0.28s ease both; }
+
+.hint { 
+  font-size: 0.72rem; 
+  color: var(--text-muted); 
+  text-align: center; 
+  line-height: 1.6; 
+  margin-top: 0.5rem;
+  max-width: 320px;
+}
+
+/* ── CLEAR OVERLAY ── */
+#overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.90);
+  z-index: 99;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.2rem;
+}
+#overlay.on { display: flex; }
+.ov-emoji { font-size: 4rem; }
+.ov-title { font-size: 2.6rem; font-weight: 800; color: var(--yellow-tile); }
+.ov-moves { font-size: 1rem; color: var(--text-muted); }
+.ov-btn {
+  padding: 0.9rem 2.8rem;
+  background: #ffffff;
+  color: #111111;
+  border: none;
+  border-radius: 14px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  user-select: none;
+}
+</style>
+</head>
+<body>
+
+<!-- ── SELECT SCREEN ── -->
+<div id="select-screen">
+  <div class="puzzle-cards">
+    <div class="puzzle-card" id="card1">
+      <div class="icon">□</div>
+      <div class="info">
+        <h3>퍼즐 1 — 3×3 기본</h3>
+        <p>3×3 격자의 타일을 뒤집어 모두 같은 색으로 만드세요.</p>
+      </div>
+    </div>
+    <div class="puzzle-card" id="card2">
+      <div class="icon">■</div>
+      <div class="info">
+        <h3>퍼즐 2 — 10개 타일</h3>
+        <p>3×3 + 오른쪽 아래 확장. 4개 줄도 뒤집을 수 있어요.</p>
+      </div>
+    </div>
+    <div class="puzzle-card" id="card3">
+      <div class="icon">◇</div>
+      <div class="info">
+        <h3>퍼즐 3 — 11개 타일</h3>
+        <p>L자 모양. 가장 복잡한 도전!</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── GAME SCREEN ── -->
+<div id="game-screen">
+  <div class="header">
+    <button class="back-btn" id="backBtn">←</button>
+    <span class="game-title" id="gameTitle">퍼즐</span>
+    <span class="move-count" id="moveCount">0 moves</span>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-mix" id="mixBtn">Mix</button>
+    <button class="btn btn-reset" id="resetBtn">Reset</button>
+  </div>
+
+  <div class="board-area">
+    <div class="arrows-h" id="arrowsTop"></div>
+    <div class="board-middle">
+      <div class="arrows-v" id="arrowsLeft"></div>
+      <div class="grid-container">
+        <div class="grid" id="grid"></div>
+      </div>
+      <div class="arrows-v" id="arrowsRight"></div>
+    </div>
+    <div class="arrows-h" id="arrowsBot"></div>
+  </div>
+
+  <div class="hint" id="hint">화살표로 행·열 뒤집기</div>
+</div>
+
+<!-- ── CLEAR OVERLAY ── -->
+<div id="overlay">
+  <div class="ov-emoji">✓</div>
+  <div class="ov-title">CLEAR!</div>
+  <div class="ov-moves" id="ovMoves"></div>
+  <button class="ov-btn" id="replayBtn">퍼즐 선택으로</button>
+</div>
+
+<script>
+let mode = 1;      // 1, 2, 3
+let G = [];        // grid data
+let moves = 0;
+let busy = false;
+let mixed = false;
+
+/* ──────────────────────────────────────────────────────────────────────────
+   PUZZLE DEFINITIONS
+   ────────────────────────────────────────────────────────────────────────── */
+
+const PUZZLES = {
+  1: {
+    title: '퍼즐 1 — 3×3 기본',
+    rows: 3,
+    cols: 3,
+    layout: [
+      [1,1,1],
+      [1,1,1],
+      [1,1,1]
+    ]
+  },
+  2: {
+    title: '퍼즐 2 — 10개 타일',
+    rows: 4,
+    cols: 3,
+    layout: [
+      [1,1,1],
+      [1,1,1],
+      [1,1,1],
+      [0,0,1]  // 오른쪽 아래만
+    ]
+  },
+  3: {
+    title: '퍼즐 3 — 11개 타일',
+    rows: 4,
+    cols: 3,
+    layout: [
+      [1,1,1],
+      [1,1,1],
+      [1,1,1],
+      [0,1,1]  // 왼쪽 아래 빈칸
+    ]
+  }
+};
+
+/* ──────────────────────────────────────────────────────────────────────────
+   SELECT SCREEN
+   ────────────────────────────────────────────────────────────────────────── */
+
+document.getElementById('card1').addEventListener('click', () => startGame(1));
+document.getElementById('card2').addEventListener('click', () => startGame(2));
+document.getElementById('card3').addEventListener('click', () => startGame(3));
+
+function startGame(m) {
+  mode = m;
+  mixed = false;
+  moves = 0;
+  initGrid();
+  document.getElementById('select-screen').classList.add('hide');
+  document.getElementById('game-screen').classList.add('show');
+  document.getElementById('gameTitle').textContent = PUZZLES[mode].title;
+  buildGrid();
+  buildArrows();
+  updateMoves();
+}
+
+function backToSelect() {
+  document.getElementById('game-screen').classList.remove('show');
+  document.getElementById('select-screen').classList.remove('hide');
+  document.getElementById('overlay').classList.remove('on');
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   GRID INIT
+   ────────────────────────────────────────────────────────────────────────── */
+
+function initGrid() {
+  const p = PUZZLES[mode];
+  G = [];
+  for (let r = 0; r < p.rows; r++) {
+    G[r] = [];
+    for (let c = 0; c < p.cols; c++) {
+      G[r][c] = p.layout[r][c] === 1 ? 'W' : null;
+    }
+  }
+}
+
+function buildGrid() {
+  const p = PUZZLES[mode];
+  const gridEl = document.getElementById('grid');
+  gridEl.className = `grid p${mode}`;
+  gridEl.innerHTML = '';
+  
+  for (let r = 0; r < p.rows; r++) {
+    for (let c = 0; c < p.cols; c++) {
+      const cell = document.createElement('div');
+      if (p.layout[r][c] === 0) {
+        cell.className = 'cell empty';
+      } else {
+        cell.className = 'cell';
+        cell.dataset.r = r;
+        cell.dataset.c = c;
+        cell.dataset.f = G[r][c];
+        cell.innerHTML = '<div class="cell-face"></div>';
+      }
+      gridEl.appendChild(cell);
+    }
+  }
+}
+
+function syncGrid() {
+  const p = PUZZLES[mode];
+  for (let r = 0; r < p.rows; r++) {
+    for (let c = 0; c < p.cols; c++) {
+      if (p.layout[r][c] === 0) continue;
+      const el = document.querySelector(`.cell[data-r="${r}"][data-c="${c}"]`);
+      if (el) el.dataset.f = G[r][c];
+    }
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   ARROWS
+   ────────────────────────────────────────────────────────────────────────── */
+
+function buildArrows() {
+  const p = PUZZLES[mode];
+  const aTop = document.getElementById('arrowsTop');
+  const aBot = document.getElementById('arrowsBot');
+  const aLeft = document.getElementById('arrowsLeft');
+  const aRight = document.getElementById('arrowsRight');
+  
+  aTop.innerHTML = aBot.innerHTML = aLeft.innerHTML = aRight.innerHTML = '';
+
+  // 열 화살표: 각 열에 대해
+  for (let c = 0; c < p.cols; c++) {
+    // 해당 열에 타일이 있는지 확인
+    let hasCell = false;
+    for (let r = 0; r < p.rows; r++) {
+      if (p.layout[r][c] === 1) { hasCell = true; break; }
+    }
+    
+    if (hasCell) {
+      aTop.appendChild(makeArrow('↓', () => flipCol(c)));
+      aBot.appendChild(makeArrow('↑', () => flipCol(c)));
+    } else {
+      aTop.appendChild(makeArrow('', null, true));
+      aBot.appendChild(makeArrow('', null, true));
+    }
+  }
+
+  // 행 화살표: 각 행에 대해
+  for (let r = 0; r < p.rows; r++) {
+    let hasCell = false;
+    for (let c = 0; c < p.cols; c++) {
+      if (p.layout[r][c] === 1) { hasCell = true; break; }
+    }
+    
+    if (hasCell) {
+      aLeft.appendChild(makeArrow('→', () => flipRow(r)));
+      aRight.appendChild(makeArrow('←', () => flipRow(r)));
+    } else {
+      aLeft.appendChild(makeArrow('', null, true));
+      aRight.appendChild(makeArrow('', null, true));
+    }
+  }
+}
+
+function makeArrow(label, fn, invisible = false) {
+  const b = document.createElement('button');
+  b.className = 'abtn' + (invisible ? ' invisible' : '');
+  b.textContent = label;
+  if (fn) {
+    b.addEventListener('click', fn);
+  }
+  return b;
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   FLIP LOGIC
+   ────────────────────────────────────────────────────────────────────────── */
+
+function flipLine(arr) {
+  // arr에서 null 아닌 것만 뒤집기 (순서 역전 + 색 반전)
+  const items = arr.filter(v => v !== null);
+  const flipped = items.reverse().map(v => v === 'W' ? 'Y' : 'W');
+  
+  // 원래 배열에 다시 채워넣기
+  const result = [...arr];
+  let idx = 0;
+  for (let i = 0; i < result.length; i++) {
+    if (result[i] !== null) {
+      result[i] = flipped[idx++];
+    }
+  }
+  return result;
+}
+
+function flipRow(r) {
+  if (busy) return;
+  G[r] = flipLine(G[r]);
+  animateLine('row', r);
+  moves++;
+  updateMoves();
+  setTimeout(checkClear, 320);
+}
+
+function flipCol(c) {
+  if (busy) return;
+  const p = PUZZLES[mode];
+  const col = [];
+  for (let r = 0; r < p.rows; r++) col.push(G[r][c]);
+  const flipped = flipLine(col);
+  for (let r = 0; r < p.rows; r++) G[r][c] = flipped[r];
+  animateLine('col', c);
+  moves++;
+  updateMoves();
+  setTimeout(checkClear, 320);
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   ANIMATE
+   ────────────────────────────────────────────────────────────────────────── */
+
+function animateLine(type, idx) {
+  busy = true;
+  const p = PUZZLES[mode];
+  const cells = [];
+  
+  if (type === 'row') {
+    for (let c = 0; c < p.cols; c++) {
+      if (p.layout[idx][c] === 0) continue;
+      const el = document.querySelector(`.cell[data-r="${idx}"][data-c="${c}"]`);
+      if (el) cells.push(el);
+    }
+  } else {
+    for (let r = 0; r < p.rows; r++) {
+      if (p.layout[r][idx] === 0) continue;
+      const el = document.querySelector(`.cell[data-r="${r}"][data-c="${idx}"]`);
+      if (el) cells.push(el);
+    }
+  }
+
+  const cls = type === 'row' ? 'fx-row' : 'fx-col';
+  cells.forEach(el => { el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); });
+  setTimeout(() => syncGrid(), 140);
+  setTimeout(() => {
+    cells.forEach(el => el.classList.remove(cls));
+    busy = false;
+  }, 300);
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   MIX / RESET / CHECK
+   ────────────────────────────────────────────────────────────────────────── */
+
+function doMix() {
+  initGrid();
+  const p = PUZZLES[mode];
+  
+  for (let i = 0; i < 25; i++) {
+    if (Math.random() < 0.5) {
+      // flip random row
+      const r = Math.floor(Math.random() * p.rows);
+      G[r] = flipLine(G[r]);
+    } else {
+      // flip random col
+      const c = Math.floor(Math.random() * p.cols);
+      const col = [];
+      for (let r = 0; r < p.rows; r++) col.push(G[r][c]);
+      const fl = flipLine(col);
+      for (let r = 0; r < p.rows; r++) G[r][c] = fl[r];
+    }
+  }
+  
+  // 이미 풀린 상태면 한 번 더
+  if (isSolved()) {
+    G[0] = flipLine(G[0]);
+  }
+  
+  moves = 0;
+  mixed = true;
+  updateMoves();
+  syncGrid();
+}
+
+function doReset() {
+  initGrid();
+  moves = 0;
+  mixed = false;
+  updateMoves();
+  syncGrid();
+}
+
+function isSolved() {
+  const p = PUZZLES[mode];
+  const colors = [];
+  for (let r = 0; r < p.rows; r++) {
+    for (let c = 0; c < p.cols; c++) {
+      if (p.layout[r][c] === 1) colors.push(G[r][c]);
+    }
+  }
+  return colors.every(v => v === colors[0]);
+}
+
+function checkClear() {
+  if (!mixed) return;
+  if (!isSolved()) return;
+  document.getElementById('ovMoves').textContent = `${moves}번 만에 클리어!`;
+  document.getElementById('overlay').classList.add('on');
+}
+
+function updateMoves() {
+  document.getElementById('moveCount').textContent = `${moves} moves`;
+}
+
 /* ──────────────────────────────────────────────────────────────────────────
    BUTTON BINDINGS
    ────────────────────────────────────────────────────────────────────────── */
