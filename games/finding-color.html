@@ -2,7 +2,6 @@
 <style>
 #fc-game{--bg:#111;--panel:#191919;--border:#383838;--text:#f5f5f5;--muted:#aaa;width:min(720px,calc(100vw - 40px));margin:0 auto;padding:20px 0 40px;color:var(--text);font-family:Arial,sans-serif}
 #fc-game *{box-sizing:border-box}
-#fc-game .fc-title{text-align:center;font-size:34px;font-weight:700;margin:0 0 28px}
 #fc-game .fc-colors{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:32px}
 #fc-game .fc-label{display:block;margin-bottom:9px;color:var(--muted);font-size:14px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
 #fc-game .fc-color-box{width:100%;aspect-ratio:2/1;min-height:145px;border:1px solid var(--border);border-radius:14px;background:#222}
@@ -32,11 +31,7 @@
 #fc-game .fc-result-values strong{display:block;margin-bottom:5px;font-size:12px;color:#888}
 #fc-game .fc-result-values span{font-size:15px;font-weight:700}
 #fc-game .fc-difference{margin-top:16px;padding:14px;border-radius:10px;background:#222;text-align:center;color:#ddd;font-size:14px;line-height:1.6}
-@media(max-width:620px){#fc-game{width:calc(100vw - 28px)}#fc-game .fc-title{font-size:28px}#fc-game .fc-color-box{min-height:105px}#fc-game .fc-control{grid-template-columns:70px minmax(0,1fr) 30px 30px 60px;gap:7px}#fc-game .fc-result-grid{grid-template-columns:1fr}}
-</style>
-
-<div class="fc-title">Finding Color</div>
-
+@media(max-width:620px){#fc-game{width:calc(100vw - 28px)}</style>
 <div class="fc-colors">
   <div><span class="fc-label">Target</span><div id="fc-target" class="fc-color-box"></div></div>
   <div><span class="fc-label">Your Color</span><div id="fc-user" class="fc-color-box"></div></div>
@@ -46,22 +41,22 @@
   <div class="fc-control">
     <span class="fc-name">HUE</span>
     <input id="fc-hue" class="fc-slider" type="range" min="0" max="359" value="0">
-    <button class="fc-step" data-id="fc-hue" data-step="-1" type="button">←</button>
-    <button class="fc-step" data-id="fc-hue" data-step="1" type="button">→</button>
+    <button class="fc-step" data-id="fc-hue" data-step="-1" type="button">&lt;</button>
+    <button class="fc-step" data-id="fc-hue" data-step="1" type="button">&gt;</button>
     <span id="fc-hue-value" class="fc-value">0°</span>
   </div>
   <div class="fc-control">
     <span class="fc-name">SATURATION</span>
     <input id="fc-sat" class="fc-slider" type="range" min="0" max="100" value="100">
-    <button class="fc-step" data-id="fc-sat" data-step="-1" type="button">←</button>
-    <button class="fc-step" data-id="fc-sat" data-step="1" type="button">→</button>
+    <button class="fc-step" data-id="fc-sat" data-step="-1" type="button">&lt;</button>
+    <button class="fc-step" data-id="fc-sat" data-step="1" type="button">&gt;</button>
     <span id="fc-sat-value" class="fc-value">100%</span>
   </div>
   <div class="fc-control">
     <span class="fc-name">VALUE</span>
     <input id="fc-val" class="fc-slider" type="range" min="0" max="100" value="100">
-    <button class="fc-step" data-id="fc-val" data-step="-1" type="button">←</button>
-    <button class="fc-step" data-id="fc-val" data-step="1" type="button">→</button>
+    <button class="fc-step" data-id="fc-val" data-step="-1" type="button">&lt;</button>
+    <button class="fc-step" data-id="fc-val" data-step="1" type="button">&gt;</button>
     <span id="fc-val-value" class="fc-value">100%</span>
   </div>
 </div>
@@ -108,18 +103,31 @@
   }
   function newTarget(){
     target.h=Math.floor(Math.random()*360);
-    target.s=Math.floor(Math.random()*101);
-    target.v=Math.floor(Math.random()*101);
+    target.s=35+Math.floor(Math.random()*66);
+    target.v=20+Math.floor(Math.random()*81);
     targetEl.style.background=hsv(target.h,target.s,target.v);
   }
   function diffHue(a,b){const d=Math.abs(a-b);return Math.min(d,360-d)}
   function score(u){
-    const h=1-diffHue(u.h,target.h)/180;
-    const s=1-Math.abs(u.s-target.s)/100;
-    const v=1-Math.abs(u.v-target.v)/100;
+    const hDiff=diffHue(u.h,target.h);
+    const sDiff=Math.abs(u.s-target.s);
+    const vDiff=Math.abs(u.v-target.v);
+
+    const h=Math.pow(1-hDiff/180,2);
+    const s=Math.pow(1-sDiff/100,2);
+    const v=Math.pow(1-vDiff/100,2);
+
     return Math.round(Math.max(0,Math.min(100,(h+s+v)/3*100)));
   }
-  function grade(n){if(n===100)return'V';if(n>=95)return'S';if(n>=85)return'A';if(n>=75)return'B';if(n>=65)return'C';if(n>=50)return'D';return'E'}
+  function grade(n){
+    if(n===100)return'V';
+    if(n>=98)return'S';
+    if(n>=90)return'A';
+    if(n>=80)return'B';
+    if(n>=68)return'C';
+    if(n>=55)return'D';
+    return'E';
+  }
   function vals(x){return`<div><strong>H</strong><span>${x.h}°</span></div><div><strong>S</strong><span>${x.s}%</span></div><div><strong>V</strong><span>${x.v}%</span></div>`}
   function check(){
     const u=user(),n=score(u);
