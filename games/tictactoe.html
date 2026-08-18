@@ -1,336 +1,287 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tic Tac Toe</title>
+<div class="ttt-container">
 
-    <style>
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            margin: 0;
-            background: #111;
-            color: white;
-            font-family: Arial, sans-serif;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        h1 {
-            align-self: flex-start;
-            margin: 10px 15px 0;
-            font-size: 48px;
-        }
-
-        #status {
-            margin-top: 45px;
-            margin-bottom: 25px;
-            font-size: 28px;
-            font-weight: bold;
-        }
-
-        /* 게임판 */
-        #board {
-            width: min(625px, 90vw);
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-        }
-
-        /* 각각의 칸을 항상 정사각형으로 */
-        .cell {
-            width: 100%;
-            aspect-ratio: 1 / 1;
-
-            background: #191919;
-            border: 1px solid #383838;
-            border-radius: 12px;
-
-            display: flex;
-            align-items: center;
-            justify-content: center;
-
-            font-size: clamp(55px, 8vw, 85px);
-            font-weight: bold;
-
-            cursor: pointer;
-            user-select: none;
-
-            transition:
-                background 0.15s ease,
-                transform 0.15s ease,
-                border-color 0.15s ease;
-        }
-
-        .cell:hover {
-            background: #222;
-            transform: scale(1.015);
-        }
-
-        .cell.x {
-            color: white;
-        }
-
-        .cell.o {
-            color: white;
-        }
-
-        /* 승리한 칸 */
-        .cell.winner {
-            background: #292929;
-            border-color: white;
-            animation: winnerPulse 0.8s ease-in-out infinite alternate;
-        }
-
-        @keyframes winnerPulse {
-            from {
-                transform: scale(1);
-                box-shadow: 0 0 0 rgba(255, 255, 255, 0);
-            }
-
-            to {
-                transform: scale(1.04);
-                box-shadow:
-                    0 0 15px rgba(255, 255, 255, 0.7),
-                    0 0 35px rgba(255, 255, 255, 0.25);
-            }
-        }
-
-        /* 게임판 승리 효과 */
-        #board.win {
-            animation: boardWin 0.5s ease;
-        }
-
-        @keyframes boardWin {
-            0%   { transform: scale(1); }
-            30%  { transform: scale(1.025); }
-            60%  { transform: scale(0.99); }
-            100% { transform: scale(1); }
-        }
-
-        #restart {
-            margin-top: 25px;
-            margin-bottom: 20px;
-
-            padding: 14px 25px;
-
-            border: 1px solid #383838;
-            border-radius: 12px;
-
-            background: #222;
-            color: white;
-
-            font-size: 18px;
-            cursor: pointer;
-
-            transition:
-                background 0.15s ease,
-                transform 0.15s ease;
-        }
-
-        #restart:hover {
-            background: #2d2d2d;
-            transform: translateY(-2px);
-        }
-
-        #restart:active {
-            transform: translateY(0);
-        }
-
-        /* 무승부 효과 */
-        #board.draw {
-            animation: drawShake 0.4s ease;
-        }
-
-        @keyframes drawShake {
-            0%, 100% {
-                transform: translateX(0);
-            }
-
-            25% {
-                transform: translateX(-5px);
-            }
-
-            75% {
-                transform: translateX(5px);
-            }
-        }
-
-        @media (max-width: 600px) {
-            h1 {
-                font-size: 38px;
-            }
-
-            #status {
-                margin-top: 30px;
-                font-size: 24px;
-            }
-
-            #board {
-                width: 90vw;
-                gap: 7px;
-            }
-
-            .cell {
-                border-radius: 9px;
-            }
-        }
-    </style>
-</head>
-
-<body>
-
-    <h1>Tic Tac Toe</h1>
-
-    <div id="status">X의 차례</div>
-
-    <div id="board">
-        <div class="cell" data-index="0"></div>
-        <div class="cell" data-index="1"></div>
-        <div class="cell" data-index="2"></div>
-
-        <div class="cell" data-index="3"></div>
-        <div class="cell" data-index="4"></div>
-        <div class="cell" data-index="5"></div>
-
-        <div class="cell" data-index="6"></div>
-        <div class="cell" data-index="7"></div>
-        <div class="cell" data-index="8"></div>
+    <div class="ttt-status" id="ttt-status">
+        X의 차례
     </div>
 
-    <button id="restart">다시 시작</button>
+    <div class="ttt-board" id="ttt-board"></div>
+
+    <button
+        class="ttt-reset"
+        id="ttt-reset"
+    >
+        다시 시작
+    </button>
+
+</div>
 
 
-    <script>
-        const board = document.getElementById("board");
-        const cells = document.querySelectorAll(".cell");
-        const status = document.getElementById("status");
-        const restartButton = document.getElementById("restart");
+<style>
 
-        let currentPlayer = "X";
-        let gameOver = false;
+.ttt-container {
+    width: min(500px, 100%);
 
-        let gameBoard = [
-            "", "", "",
-            "", "", "",
-            "", "", ""
-        ];
+    margin: 0 auto;
 
-        const winningCombinations = [
-            [0, 1, 2],
-            [3, 4, 5],
-            [6, 7, 8],
+    text-align: center;
+}
 
-            [0, 3, 6],
-            [1, 4, 7],
-            [2, 5, 8],
+.ttt-status {
+    margin-bottom: 20px;
 
-            [0, 4, 8],
-            [2, 4, 6]
-        ];
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.ttt-board {
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, 1fr);
+
+    width: 100%;
+
+    aspect-ratio: 1;
+
+    gap: 8px;
+}
+
+.ttt-cell {
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid #333;
+    border-radius: 10px;
+
+    background: #181818;
+
+    font-size: clamp(40px, 10vw, 70px);
+    font-weight: 800;
+
+    cursor: pointer;
+
+    user-select: none;
+}
+
+.ttt-cell:hover {
+    background: #242424;
+}
+
+.ttt-reset {
+    margin-top: 20px;
+
+    padding: 12px 20px;
+
+    border: 1px solid #333;
+    border-radius: 10px;
+
+    background: #222;
+    color: white;
+
+    font-size: 16px;
+
+    cursor: pointer;
+}
+
+.ttt-reset:hover {
+    background: #303030;
+}
+
+.ttt-cell.ttt-winner {
+    background: #2a2a2a;
+    border-color: #fff;
+    animation: ttt-win-pulse 0.65s ease-in-out infinite alternate;
+}
+
+@keyframes ttt-win-pulse {
+    from {
+        transform: scale(1);
+        box-shadow: 0 0 0 rgba(255,255,255,0);
+    }
+    to {
+        transform: scale(1.045);
+        box-shadow:
+            0 0 12px rgba(255,255,255,0.65),
+            0 0 28px rgba(255,255,255,0.18);
+    }
+}
+
+.ttt-board.ttt-win {
+    animation: ttt-board-win 0.45s ease;
+}
+
+@keyframes ttt-board-win {
+    0%   { transform: scale(1); }
+    35%  { transform: scale(1.02); }
+    70%  { transform: scale(0.995); }
+    100% { transform: scale(1); }
+}
+
+</style>
 
 
-        cells.forEach(cell => {
-            cell.addEventListener("click", () => {
+<script>
 
-                if (gameOver) return;
+(() => {
 
-                const index = Number(cell.dataset.index);
+    const board =
+        document.getElementById("ttt-board");
 
-                if (gameBoard[index] !== "") return;
+    const status =
+        document.getElementById("ttt-status");
 
-                gameBoard[index] = currentPlayer;
+    const resetButton =
+        document.getElementById("ttt-reset");
 
-                cell.textContent = currentPlayer;
-                cell.classList.add(currentPlayer.toLowerCase());
 
-                const winningLine = checkWinner();
+    let cells = [];
 
-                if (winningLine) {
-                    gameOver = true;
+    let currentPlayer = "X";
 
-                    status.textContent = `${currentPlayer} 승리!`;
+    let gameOver = false;
 
-                    /* 승리한 3칸 강조 */
-                    winningLine.forEach(index => {
-                        cells[index].classList.add("winner");
-                    });
 
-                    /* 게임판 전체 효과 */
-                    board.classList.add("win");
+    const winningPatterns = [
 
-                    return;
-                }
+        [0, 1, 2],
+        [3, 4, 5],
+        [6, 7, 8],
 
-                /* 모든 칸이 차면 무승부 */
-                if (gameBoard.every(cell => cell !== "")) {
-                    gameOver = true;
-                    status.textContent = "무승부!";
+        [0, 3, 6],
+        [1, 4, 7],
+        [2, 5, 8],
 
-                    board.classList.add("draw");
+        [0, 4, 8],
+        [2, 4, 6]
 
-                    return;
-                }
+    ];
 
-                /* 플레이어 변경 */
-                currentPlayer = currentPlayer === "X" ? "O" : "X";
-                status.textContent = `${currentPlayer}의 차례`;
+
+    function createBoard() {
+
+        board.innerHTML = "";
+
+        cells = [];
+
+        currentPlayer = "X";
+
+        gameOver = false;
+
+        status.textContent =
+            "X의 차례";
+
+
+        for (let i = 0; i < 9; i++) {
+
+            const cell =
+                document.createElement("div");
+
+
+            cell.className =
+                "ttt-cell";
+
+
+            cell.addEventListener(
+                "click",
+                () => play(i)
+            );
+
+
+            board.appendChild(cell);
+
+            cells.push(cell);
+        }
+    }
+
+
+    function play(index) {
+
+        if (gameOver) {
+            return;
+        }
+
+
+        if (cells[index].textContent !== "") {
+            return;
+        }
+
+
+        cells[index].textContent =
+            currentPlayer;
+
+
+        const winningLine = checkWin();
+
+        if (winningLine) {
+
+            status.textContent =
+                `${currentPlayer} 승리!`;
+
+            gameOver = true;
+
+            winningLine.forEach(index => {
+                cells[index].classList.add("ttt-winner");
             });
-        });
+
+            board.classList.add("ttt-win");
+
+            return;
+        }
 
 
-        function checkWinner() {
+        if (cells.every(
+            cell => cell.textContent !== ""
+        )) {
 
-            for (const combination of winningCombinations) {
+            status.textContent =
+                "무승부!";
 
-                const [a, b, c] = combination;
+            gameOver = true;
 
-                if (
-                    gameBoard[a] !== "" &&
-                    gameBoard[a] === gameBoard[b] &&
-                    gameBoard[a] === gameBoard[c]
-                ) {
-                    return combination;
-                }
+            return;
+        }
+
+
+        currentPlayer =
+            currentPlayer === "X"
+                ? "O"
+                : "X";
+
+
+        status.textContent =
+            `${currentPlayer}의 차례`;
+    }
+
+
+    function checkWin() {
+
+        for (const pattern of winningPatterns) {
+
+            const [a, b, c] = pattern;
+
+            if (
+                cells[a].textContent &&
+                cells[a].textContent === cells[b].textContent &&
+                cells[a].textContent === cells[c].textContent
+            ) {
+                return pattern;
             }
-
-            return null;
         }
 
+        return null;
+    }
 
-        restartButton.addEventListener("click", restartGame);
+
+    resetButton.addEventListener(
+        "click",
+        createBoard
+    );
 
 
-        function restartGame() {
+    createBoard();
 
-            gameBoard = [
-                "", "", "",
-                "", "", "",
-                "", "", ""
-            ];
+})();
 
-            currentPlayer = "X";
-            gameOver = false;
-
-            status.textContent = "X의 차례";
-
-            cells.forEach(cell => {
-                cell.textContent = "";
-                cell.classList.remove(
-                    "x",
-                    "o",
-                    "winner"
-                );
-            });
-
-            board.classList.remove("win", "draw");
-        }
-    </script>
-
-</body>
-</html>
+</script>
