@@ -19,10 +19,9 @@
 <style>
 
 .ttt-container {
-    width: min(500px, 100%);
-
+    width: 500px;
+    max-width: calc(100vw - 64px);
     margin: 0 auto;
-
     text-align: center;
 }
 
@@ -35,13 +34,11 @@
 
 .ttt-board {
     display: grid;
-
-    grid-template-columns:
-        repeat(3, 1fr);
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
 
     width: 100%;
-
-    aspect-ratio: 1;
+    aspect-ratio: 1 / 1;
 
     gap: 8px;
 }
