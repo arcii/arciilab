@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>평면 큐브 퍼즐</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --white-tile: #f2f2f2;
+  --yellow-tile: #202020;
+  --bg: #111111;
+  --surface: #1c1c1c;
+  --accent: #ffffff;
+  --text: #f5f5f5;
+  --text-muted: #999999;
+  --cell: 82px;
+  --gap: 7px;
+}
+
+html, body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  height: 100%;
+  width: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+/* ──────────────────────────────────────────────────────────────────────────
+   BUTTON BINDINGS
+   ────────────────────────────────────────────────────────────────────────── */
+
+document.getElementById('backBtn').addEventListener('click', backToSelect);
+document.getElementById('mixBtn').addEventListener('click', doMix);
+document.getElementById('resetBtn').addEventListener('click', doReset);
+document.getElementById('replayBtn').addEventListener('click', backToSelect);
+
+</script>
+</body>
+</html>
