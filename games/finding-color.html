@@ -31,7 +31,103 @@
 #fc-game .fc-result-values strong{display:block;margin-bottom:5px;font-size:12px;color:#888}
 #fc-game .fc-result-values span{font-size:15px;font-weight:700}
 #fc-game .fc-difference{margin-top:16px;padding:14px;border-radius:10px;background:#222;text-align:center;color:#ddd;font-size:14px;line-height:1.6}
-@media(max-width:620px){#fc-game{width:calc(100vw - 28px)}</style>
+@media (max-width: 620px) {
+
+  #fc-game {
+    width: calc(100vw - 24px);
+    padding: 10px 0 30px;
+  }
+
+  /* Target / Your Color */
+  #fc-game .fc-colors {
+    gap: 10px;
+    margin-bottom: 26px;
+  }
+
+  #fc-game .fc-color-box {
+    min-height: 90px;
+    border-radius: 10px;
+  }
+
+  #fc-game .fc-label {
+    font-size: 12px;
+    margin-bottom: 6px;
+  }
+
+  /*
+    모바일에서는
+    이름
+    ───────────── 슬라이더
+    < >    수치
+    형태로 배치
+  */
+  #fc-game .fc-control {
+    display: grid;
+
+    grid-template-columns: 76px minmax(0, 1fr) 30px 30px 58px;
+
+    gap: 6px;
+  }
+
+  #fc-game .fc-name {
+    font-size: 11px;
+    letter-spacing: 0;
+  }
+
+  #fc-game .fc-value {
+    width: auto;
+    font-size: 13px;
+  }
+
+  #fc-game .fc-step {
+    width: 30px;
+    height: 30px;
+    font-size: 16px;
+  }
+
+  #fc-game .fc-slider {
+    height: 12px;
+  }
+
+  #fc-game .fc-slider::-webkit-slider-thumb {
+    width: 20px;
+    height: 20px;
+  }
+
+  #fc-game .fc-slider::-moz-range-thumb {
+    width: 17px;
+    height: 17px;
+  }
+
+  /* 버튼 */
+  #fc-game .fc-actions {
+    margin-top: 24px;
+  }
+
+  #fc-game .fc-button {
+    min-width: 0;
+    flex: 1;
+    padding: 11px 12px;
+  }
+
+  /* 결과창 */
+  #fc-game .fc-result {
+    padding: 18px 12px;
+  }
+
+  #fc-game .fc-score-number {
+    font-size: 52px;
+  }
+
+  #fc-game .fc-grade {
+    font-size: 24px;
+  }
+
+  #fc-game .fc-result-grid {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
 <div class="fc-colors">
   <div><span class="fc-label">Target</span><div id="fc-target" class="fc-color-box"></div></div>
   <div><span class="fc-label">Your Color</span><div id="fc-user" class="fc-color-box"></div></div>
