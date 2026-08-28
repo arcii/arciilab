@@ -1,0 +1,148 @@
+<div id="hr-game">
+<style>
+#hr-game{width:min(760px,calc(100vw - 28px));margin:0 auto;padding:18px 0 36px;color:#f5f5f5;font-family:Arial,sans-serif}#hr-game *{box-sizing:border-box}#hr-game button{font:inherit}
+#hr-game .hr-screen{display:none}#hr-game .hr-screen.active{display:block}
+#hr-game .hr-title{text-align:center;font-size:36px;font-weight:800;margin:4px 0 8px}#hr-game .hr-sub{text-align:center;color:#999;font-size:14px;margin-bottom:28px}
+#hr-game .hr-mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+#hr-game .hr-mode{position:relative;padding:28px 20px;min-height:190px;border:1px solid #3d3d3d;border-radius:16px;background:#191919;color:#fff;text-align:left;cursor:pointer;transition:.18s}
+#hr-game .hr-mode:hover:not(:disabled){background:#242424;transform:translateY(-2px)}#hr-game .hr-mode:disabled{opacity:.38;cursor:not-allowed}
+#hr-game .hr-mode h2{margin:0 0 10px;font-size:25px}#hr-game .hr-mode p{margin:0;color:#aaa;line-height:1.6;font-size:13px}
+#hr-game .hr-mode .hr-lock{position:absolute;right:18px;top:18px;font-size:12px;color:#888}
+#hr-game .hr-balance{text-align:center;font-size:18px;font-weight:700;margin-bottom:20px}#hr-game .hr-balance span{font-size:25px}
+#hr-game .hr-horse-list{display:flex;flex-direction:column;gap:9px;margin-bottom:18px}
+#hr-game .hr-horse{display:grid;grid-template-columns:38px 1fr auto;align-items:center;gap:10px;padding:12px 14px;border:1px solid #333;border-radius:11px;background:#191919;color:#fff;text-align:left;cursor:pointer}
+#hr-game .hr-horse:hover{background:#242424}.hr-horse.selected{border-color:#aaa;background:#252525}
+#hr-game .hr-horse-icon{font-size:25px;text-align:center}#hr-game .hr-horse-name{font-weight:700}#hr-game .hr-horse-odds{font-size:12px;color:#999}
+#hr-game .hr-bet-row{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;margin:14px 0}
+#hr-game .hr-selected{padding:12px 15px;border-radius:10px;background:#1b1b1b;border:1px solid #333;color:#aaa;font-size:13px}#hr-game .hr-selected strong{color:#fff}
+#hr-game .hr-bet-buttons{display:grid;grid-template-columns:repeat(5,auto);gap:6px;justify-content:end}
+#hr-game .hr-bet-buttons button,#hr-game .hr-reset,#hr-game .hr-start,#hr-game .hr-next{border:1px solid #444;border-radius:8px;background:#222;color:#fff;padding:9px 12px;cursor:pointer;font-weight:700}
+#hr-game .hr-bet-buttons button:hover,#hr-game .hr-reset:hover,#hr-game .hr-next:hover{background:#303030}
+#hr-game .hr-start{width:100%;margin-top:6px;background:#fff;color:#111;border-color:#fff;padding:13px}#hr-game .hr-start:disabled{opacity:.3;cursor:not-allowed}
+#hr-game .hr-reset{white-space:nowrap}#hr-game .hr-hint{text-align:center;color:#777;font-size:12px;margin-top:10px}
+#hr-game .hr-race-wrap{position:relative}#hr-game .hr-track{position:relative;padding:10px 14px 18px;border:1px solid #333;border-radius:14px;background:#151515;overflow:hidden}
+#hr-game .hr-track-line{position:absolute;left:42px;right:38px;top:0;bottom:0;border-right:2px dashed #777;pointer-events:none}
+#hr-game .hr-lane{position:relative;height:54px;border-bottom:1px solid #2b2b2b}.hr-lane:last-child{border-bottom:0}
+#hr-game .hr-runner{position:absolute;left:0;top:8px;width:50px;height:38px;display:flex;align-items:center;justify-content:center;font-size:28px;transition:left .08s linear;z-index:2}
+#hr-game .hr-lane-name{position:absolute;left:2px;top:4px;font-size:9px;color:#777;z-index:3}
+#hr-game .hr-finish{position:absolute;right:8px;top:0;bottom:0;width:22px;display:flex;align-items:center;justify-content:center;color:#aaa;font-size:10px;writing-mode:vertical-rl;letter-spacing:2px}
+#hr-game .hr-race-title{text-align:center;margin:0 0 15px;font-size:22px}
+#hr-game .hr-countdown{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.88);z-index:20;font-size:110px;font-weight:900}.hr-countdown.show{display:flex}
+#hr-game .hr-status{text-align:center;color:#aaa;font-size:13px;margin:12px 0}
+#hr-game .hr-result{margin-top:20px;padding:22px;border:1px solid #3b3b3b;border-radius:14px;background:#191919;text-align:center}
+#hr-game .hr-result h2{margin:0 0 12px}.hr-profit{font-size:25px;font-weight:800;margin:10px 0}.positive{color:#fff}.negative{color:#aaa}
+#hr-game .hr-ranking{margin:15px auto;text-align:left;max-width:390px}.hr-rank-row{display:flex;justify-content:space-between;padding:7px 9px;border-bottom:1px solid #2c2c2c;font-size:13px}.hr-rank-row:first-child{font-weight:800;background:#222;border-radius:7px}
+#hr-game .hr-next{margin-top:10px;padding:12px 20px}.hr-gameover{font-size:13px;color:#aaa;line-height:1.6;margin:10px 0 16px}
+@media(max-width:620px){#hr-game{width:calc(100vw - 16px);padding-top:10px}#hr-game .hr-title{font-size:29px}#hr-game .hr-mode-grid{grid-template-columns:1fr;gap:10px}#hr-game .hr-mode{min-height:145px;padding:22px 17px}#hr-game .hr-mode h2{font-size:22px}
+#hr-game .hr-bet-row{grid-template-columns:1fr;gap:8px}#hr-game .hr-bet-buttons{grid-template-columns:repeat(4,1fr);justify-content:stretch}#hr-game .hr-bet-buttons button{padding:9px 4px;font-size:12px}
+#hr-game .hr-track{padding-left:8px;padding-right:28px}#hr-game .hr-track-line{left:42px;right:28px}#hr-game .hr-runner{font-size:24px;width:43px}}
+</style>
+
+<div id="hr-menu" class="hr-screen active">
+<div class="hr-title">Horse Racing</div><div class="hr-sub">Start with 10 credits. Reach 1,000 credits.</div>
+<div class="hr-balance">Credits <span id="hr-menu-balance">10</span></div>
+<div class="hr-mode-grid">
+<button id="hr-easy" class="hr-mode" type="button"><h2>Easy Racing</h2><p>3 horses · 1st ×2 · 2nd ×1.5 · 3rd ×1</p></button>
+<button id="hr-hard" class="hr-mode" type="button"><span id="hr-lock" class="hr-lock">🔒 Requires 100 credits</span><h2>Hard Racing</h2><p>5 horses · 1st ×5 · 2nd ×3 · 3rd ×2 · 4th ×1 · 5th ×1</p></button>
+</div><div class="hr-hint">This run is temporary. Leaving the game resets your credits.</div>
+</div>
+
+<div id="hr-betting" class="hr-screen">
+<div class="hr-title" id="hr-mode-title">Easy Racing</div><div class="hr-balance">Credits <span id="hr-balance">10</span></div>
+<div id="hr-horses" class="hr-horse-list"></div>
+<div class="hr-selected">Selected horse: <strong id="hr-selected-name">None</strong></div>
+<div class="hr-selected" id="hr-payout-info"></div>
+<div class="hr-bet-row"><div class="hr-selected">Bet: <strong id="hr-bet">0</strong></div><div id="hr-bet-buttons" class="hr-bet-buttons"></div></div>
+<button id="hr-start" class="hr-start" type="button" disabled>Place Bet &amp; Start Race</button>
+<div class="hr-hint">Select a horse and set your bet first.</div>
+</div>
+
+<div id="hr-race" class="hr-screen"><div class="hr-race-wrap"><div id="hr-countdown" class="hr-countdown"></div><h2 class="hr-race-title" id="hr-race-title">Race</h2><div id="hr-track" class="hr-track"></div><div id="hr-status" class="hr-status">Ready...</div></div></div>
+<div id="hr-result-screen" class="hr-screen"><div class="hr-title">Race Result</div><div id="hr-result" class="hr-result"></div></div>
+
+<script>
+(()=>{const root=document.getElementById('hr-game');if(!root)return;const $=s=>root.querySelector(s);
+let credits=10,mode='easy',selected=-1,bet=0,horses=[],racing=false;
+const easyNames=['Silver Arrow','Black Comet','White Storm'],hardNames=['Night Runner','Thunder Bolt','Red Rocket','Iron Wind','Golden Flash'],icons=['🐎','🏇','🐴','♞','♘'];
+function show(id){root.querySelectorAll('.hr-screen').forEach(x=>x.classList.remove('active'));$(id).classList.add('active')}
+function updateMenu(){$('#hr-menu-balance').textContent=credits;$('#hr-hard').disabled=credits<100;$('#hr-lock').textContent=credits<100?'🔒 Requires 100 credits':'🔓 Unlocked'}
+function chooseMode(m){mode=m;selected=-1;bet=0;const names=m==='easy'?easyNames:hardNames;horses=names.map((name,i)=>({name,icon:icons[i],progress:0}));$('#hr-mode-title').textContent=m==='easy'?'Easy Racing':'Hard Racing';$('#hr-balance').textContent=credits;renderHorses();renderBetButtons();updatePayoutInfo();updateStart();show('#hr-betting')}
+function renderHorses(){$('#hr-horses').innerHTML=horses.map((h,i)=>`<button class="hr-horse ${selected===i?'selected':''}" type="button" data-horse="${i}"><span class="hr-horse-icon">${h.icon}</span><span><span class="hr-horse-name">${h.name}</span></span><span>${selected===i?'✓':''}</span></button>`).join('');root.querySelectorAll('.hr-horse').forEach(b=>b.addEventListener('click',()=>{selected=+b.dataset.horse;renderHorses();updateStart()}))}
+function renderBetButtons(){const amounts=mode==='easy'?[-10,-1,1,10]:[-100,-10,-1,1,10,100];$('#hr-bet-buttons').innerHTML=amounts.map(n=>`<button type="button" data-amount="${n}">${n>0?'+':''}${n}</button>`).join('')+`<button id="hr-reset" class="hr-reset" type="button">Reset</button>`;root.querySelectorAll('#hr-bet-buttons button[data-amount]').forEach(b=>b.addEventListener('click',()=>{bet=Math.max(0,Math.min(credits,bet+ +b.dataset.amount));$('#hr-bet').textContent=bet;updateStart()}));$('#hr-reset').addEventListener('click',()=>{bet=0;$('#hr-bet').textContent=0;updateStart()})}
+function updatePayoutInfo(){
+  $('#hr-payout-info').innerHTML=mode==='easy'
+    ? 'Payout by finish: <strong>1st ×2</strong> · <strong>2nd ×1.5</strong> · <strong>3rd ×1</strong>'
+    : 'Payout by finish: <strong>1st ×5</strong> · <strong>2nd ×3</strong> · <strong>3rd ×2</strong> · <strong>4th ×1</strong> · <strong>5th ×1</strong>';
+}
+function updateStart(){$('#hr-start').disabled=selected<0||bet<=0||bet>credits||racing;$('#hr-selected-name').textContent=selected<0?'None':horses[selected].name}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function buildTrack(){$('#hr-track').innerHTML='<div class="hr-track-line"></div><div class="hr-finish">FINISH</div>'+horses.map((h,i)=>`<div class="hr-lane"><span class="hr-lane-name">${i+1}</span><div class="hr-runner" id="hr-runner-${i}">${h.icon}</div></div>`).join('')}
+function countdown(){return new Promise(resolve=>{const el=$('#hr-countdown');el.classList.add('show');let n=3;el.textContent=n;const t=setInterval(()=>{n--;if(n>0)el.textContent=n;else if(n===0)el.textContent='GO!';else{clearInterval(t);el.classList.remove('show');resolve()}},700)})}
+async function startRace(){
+if($('#hr-start').disabled)return;
+horses.forEach(h=>h.progress=0);
+$('#hr-status').textContent='Ready...';racing=true;$('#hr-start').disabled=true;credits-=bet;$('#hr-balance').textContent=credits;buildTrack();$('#hr-race-title').textContent=(mode==='easy'?'Easy':'Hard')+' Racing';show('#hr-race');await countdown();await runRace()}
+function runRace(){
+return new Promise(resolve=>{
+  const finish=1000;
+  const start=performance.now();
+  const order=[];
+  const total=horses.length;
+
+  // Each horse gets a different racing personality.
+  // acceleration: how strongly it can surge
+  // stamina: how much its speed varies over the race
+  // base: overall pace
+  const racers=horses.map(()=>({
+    base:.95+Math.random()*.28,
+    acceleration:.65+Math.random()*.75,
+    stamina:.55+Math.random()*.75,
+    phase:Math.random()*Math.PI*2,
+    burst:0
+  }));
+
+  function frame(now){
+    let allDone=true;
+
+    horses.forEach((h,i)=>{
+      if(h.progress<finish){
+        allDone=false;
+        const r=racers[i];
+        const t=(h.progress/finish);
+
+        // Smooth changing pace + occasional burst/slump.
+        const wave=0.72+0.28*Math.sin(t*12+r.phase);
+        const fatigue=1-0.13*t*r.stamina;
+        const burstChance=Math.random()<0.018;
+        if(burstChance) r.burst=12+r.acceleration*12;
+        r.burst*=0.90;
+
+        const pace=r.base*wave*fatigue + r.burst;
+        h.progress=Math.min(finish,h.progress+pace);
+
+        const pct=h.progress/finish*100;
+        $('#hr-runner-'+i).style.left=`calc(${pct}% - 25px)`;
+
+        if(h.progress>=finish&&!order.includes(i)) order.push(i);
+      }
+    });
+
+    $('#hr-status').textContent=`${order.length} / ${total} finished`;
+
+    if(allDone){
+      finishRace(order);
+      resolve();
+    }else{
+      requestAnimationFrame(frame);
+    }
+  }
+
+  requestAnimationFrame(frame);
+});
+}
+
+function finishRace(order){const pos=order.indexOf(selected),mult=mode==='easy'?[2,1.5,1][pos]:[5,3,2,1,1][pos],payout=Math.floor(bet*mult),net=payout-bet;credits+=payout;const place=pos+1,rows=order.map((idx,i)=>`<div class="hr-rank-row"><span>${i+1}위</span><span>${horses[idx].icon} ${horses[idx].name}</span></div>`).join('');let message=credits>=1000?'<div class="hr-gameover">🎉 목표 달성! <strong>1,000 credits</strong>에 도달했습니다.</div>':credits<=0?'<div class="hr-gameover">보유 재화가 0이 되었습니다. 다시 도전하세요.</div>':'';$('#hr-result').innerHTML=`<h2>${horses[selected].icon} ${horses[selected].name}: ${place}위</h2><div class="hr-profit ${net>=0?'positive':'negative'}">${net>=0?'+':''}${net} credits</div><div>Bet ${bet} → Payout ${payout}</div><div class="hr-ranking">${rows}</div><div>Current credits: <strong>${credits}</strong></div>${message}<button id="hr-next" class="hr-next" type="button">Back to Racing</button>`;$('#hr-next').addEventListener('click',()=>{racing=false;updateMenu();show('#hr-menu')});show('#hr-result-screen')}
+$('#hr-easy').addEventListener('click',()=>chooseMode('easy'));$('#hr-hard').addEventListener('click',()=>{if(credits>=100)chooseMode('hard')});$('#hr-start').addEventListener('click',startRace);updateMenu();
+})();
+</script>
+</div>
