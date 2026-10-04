@@ -155,7 +155,7 @@ function submit(){
   if(value===target){finish(true,value);return}
   wrong++;renderProgress();renderHints();
   if(wrong>=6){finish(false,value);return}
-  $('#n-message').textContent=`아쉽습니다. 정답은 ${value<target?'더 큰':'더 작은'} 수입니다.`;
+  <!--$('#n-message').textContent=`아쉽습니다. 정답은 ${value<target?'더 큰':'더 작은'} 수입니다.`;-->
   $('#n-guess').select();
 }
 function finish(win,last){
