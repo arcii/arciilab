@@ -1,0 +1,175 @@
+<div id="n1000-game">
+<style>
+#n1000-game{width:min(720px,calc(100vw - 28px));margin:0 auto;padding:18px 0 36px;color:#f5f5f5;font-family:Arial,sans-serif}#n1000-game *{box-sizing:border-box}
+#n1000-game .n-screen{display:none}#n1000-game .n-screen.active{display:block}
+#n1000-game .n-title{text-align:center;font-size:36px;font-weight:800;margin:4px 0 8px}#n1000-game .n-sub{text-align:center;color:#999;font-size:14px;margin-bottom:22px}
+#n1000-game .n-progress{display:flex;gap:6px;justify-content:center;margin:0 auto 22px}.n-dot{width:42px;height:7px;border-radius:99px;background:#292929}.n-dot.open{background:#aaa}.n-dot.used{background:#fff}
+#n1000-game .n-hints{display:flex;flex-direction:column;gap:9px}.n-hint{border:1px solid #333;background:#191919;border-radius:12px;padding:14px 16px}
+.n-hint-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px}.n-hint-step{font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.08em}.n-hint-name{font-weight:700;font-size:15px}.n-hint-text{font-size:14px;line-height:1.55;color:#ddd}.n-hint.locked{opacity:.72}.n-hint.locked .n-hint-text{color:#666}
+.n-input-wrap{display:flex;gap:8px;margin-top:20px}#n-guess{flex:1;min-width:0;border:1px solid #444;border-radius:9px;background:#111;color:#fff;padding:13px 14px;font-size:18px;outline:none}#n-guess:focus{border-color:#aaa}
+#n-submit,.n-again{border:1px solid #fff;border-radius:9px;background:#fff;color:#111;padding:12px 18px;font-weight:800;cursor:pointer}#n-submit:disabled{opacity:.35;cursor:not-allowed}
+.n-message{text-align:center;min-height:22px;margin-top:10px;font-size:13px;color:#aaa}.n-history{margin-top:18px;border-top:1px solid #292929;padding-top:14px}.n-history-title{font-size:11px;color:#777;margin-bottom:7px}.n-history-list{display:flex;flex-wrap:wrap;gap:6px}.n-guess-chip{border:1px solid #333;background:#181818;border-radius:7px;padding:6px 9px;font-size:12px;color:#aaa}
+.n-result{text-align:center;border:1px solid #3b3b3b;border-radius:14px;background:#191919;padding:28px 18px}.n-result-big{font-size:48px;font-weight:900;margin:4px 0 6px}.n-result-grade{font-size:24px;font-weight:800;margin-bottom:12px}.n-result-text{color:#aaa;font-size:14px;line-height:1.6;margin-bottom:20px}.n-again{padding:12px 24px}
+@media(max-width:520px){#n1000-game{width:calc(100vw - 16px);padding-top:10px}#n1000-game .n-title{font-size:29px}.n-dot{width:34px}.n-hint{padding:12px 13px}.n-input-wrap{gap:6px}#n-guess{font-size:16px;padding:12px}#n-submit{padding:11px 13px}}
+</style>
+<div id="n-menu" class="n-screen active"><div class="n-title">1 to 1000</div><div class="n-sub">숫자 자체보다, 숫자의 성질을 추리해보세요.</div><div class="n-result"><div class="n-result-text">틀릴 때마다 <strong>서로 다른 방식의 수학적 힌트</strong>가 하나씩 공개됩니다.<br>나머지, 소수, 약수, 자릿수, 이진수… 단서를 조합해서 정답을 추리하세요.</div><button id="n-start" class="n-again" type="button">Start Game</button></div></div>
+<div id="n-play" class="n-screen"><div class="n-title">1 to 1000</div><div class="n-sub">추측이 틀릴수록 정답의 성질이 하나씩 드러납니다.</div><div id="n-progress" class="n-progress"></div><div id="n-hints" class="n-hints"></div><div class="n-input-wrap"><input id="n-guess" type="number" min="1" max="1000" step="1" inputmode="numeric" placeholder="1–1000 사이의 정수"><button id="n-submit" type="button">추측</button></div><div id="n-message" class="n-message"></div><div class="n-history"><div class="n-history-title">나의 추측</div><div id="n-history-list" class="n-history-list"></div></div></div>
+<div id="n-result-screen" class="n-screen"><div class="n-title">1 to 1000</div><div id="n-result-box" class="n-result"></div></div>
+<script>
+(()=>{
+const root=document.getElementById('n1000-game');
+if(!root)return;
+const $=s=>root.querySelector(s);
+let target=0,wrong=0,guesses=[],finished=false,hints=[];
+
+function rand(a,b){return Math.floor(Math.random()*(b-a+1))+a}
+function show(id){root.querySelectorAll('.n-screen').forEach(x=>x.classList.remove('active'));$(id).classList.add('active')}
+function isPrime(n){if(n<2)return false;for(let i=2;i*i<=n;i++)if(n%i===0)return false;return true}
+function divisors(n){let a=[];for(let i=1;i*i<=n;i++)if(n%i===0){a.push(i);if(i*i!==n)a.push(n/i)}return a}
+function digitSum(n){return String(n).split('').reduce((a,b)=>a+Number(b),0)}
+function digitProduct(n){return String(n).split('').reduce((a,b)=>a*Number(b),1)}
+function properDivisors(n){return divisors(n).filter(x=>x!==n)}
+function primeFactorization(n){
+  const a=[];let x=n;
+  for(let p=2;p*p<=x;p++)while(x%p===0){a.push(p);x/=p}
+  if(x>1)a.push(x);
+  return a;
+}
+function digitalRoot(n){return n===0?0:1+(n-1)%9}
+function countDigit(n,d){return String(n).split('').filter(x=>x===String(d)).length}
+function reverseNum(n){return Number(String(n).split('').reverse().join(''))}
+function gcd(a,b){while(b){[a,b]=[b,a%b]}return a}
+function nearestPrimeDown(n){for(let x=n-1;x>=2;x--)if(isPrime(x))return x}
+function nearestPrimeUp(n){for(let x=n+1;x<=1000;x++)if(isPrime(x))return x}
+
+const makers=[
+ {id:'mod7',name:'7로 나눈 나머지',make:n=>`7로 나누면 나머지가 <strong>${n%7}</strong>이다.`,key:n=>n%7},
+ {id:'mod11',name:'11로 나눈 나머지',make:n=>`11로 나누면 나머지가 <strong>${n%11}</strong>이다.`,key:n=>n%11},
+ {id:'mod13',name:'13으로 나눈 나머지',make:n=>`13으로 나누면 나머지가 <strong>${n%13}</strong>이다.`,key:n=>n%13},
+ {id:'mod9',name:'9로 나눈 나머지',make:n=>`9로 나누면 나머지가 <strong>${n%9}</strong>이다.`,key:n=>n%9},
+ {id:'prime',name:'소수인가?',make:n=>isPrime(n)?`정답은 <strong>소수</strong>다.`:`정답은 <strong>합성수</strong>다.`,key:n=>isPrime(n)},
+ {id:'divcount',name:'약수의 개수',make:n=>`양의 약수가 <strong>${divisors(n).length}개</strong>다.`,key:n=>divisors(n).length},
+ {id:'propercount',name:'자기 자신을 뺀 약수',make:n=>`자기 자신을 제외한 양의 약수가 <strong>${properDivisors(n).length}개</strong>다.`,key:n=>properDivisors(n).length},
+ {id:'factorcount',name:'소인수의 개수',make:n=>`소인수분해했을 때 <strong>소인수의 개수</strong>(중복 포함)가 ${primeFactorization(n).length}개다.`,key:n=>primeFactorization(n).length},
+ {id:'distinctfactor',name:'서로 다른 소인수',make:n=>`서로 다른 소인수가 <strong>${new Set(primeFactorization(n)).size}개</strong>다.`,key:n=>new Set(primeFactorization(n)).size},
+ {id:'digitsum',name:'자릿수의 합',make:n=>`각 자리 숫자의 합이 <strong>${digitSum(n)}</strong>이다.`,key:n=>digitSum(n)},
+ {id:'digitprod',name:'자릿수의 곱',make:n=>`각 자리 숫자를 곱하면 <strong>${digitProduct(n)}</strong>이다.`,key:n=>digitProduct(n)},
+ {id:'digitalroot',name:'디지털 루트',make:n=>`각 자리 숫자를 계속 더해 한 자리로 만들면 <strong>${digitalRoot(n)}</strong>이다.`,key:n=>digitalRoot(n)},
+ {id:'digitsodd',name:'자리 숫자의 홀짝',make:n=>`자리 숫자 중 홀수가 <strong>${String(n).split('').filter(d=>Number(d)%2).length}개</strong>다.`,key:n=>String(n).split('').filter(d=>Number(d)%2).length},
+ {id:'digitzero',name:'0의 등장',make:n=>`숫자 안에 <strong>0이 ${countDigit(n,0)}번</strong> 등장한다.`,key:n=>countDigit(n,0)},
+ {id:'digitrepeat',name:'같은 숫자의 반복',make:n=>`가장 많이 등장하는 같은 숫자가 <strong>${Math.max(...[0,1,2,3,4,5,6,7,8,9].map(d=>countDigit(n,d)))}번</strong> 나타난다.`,key:n=>Math.max(...[0,1,2,3,4,5,6,7,8,9].map(d=>countDigit(n,d)))},
+ {id:'squareband',name:'제곱수 사이',make:n=>{let k=Math.floor(Math.sqrt(n));return `<strong>${k*k}</strong> 이상 <strong>${(k+1)*(k+1)}</strong> 미만이다.`},key:n=>Math.floor(Math.sqrt(n))},
+ {id:'cubeBand',name:'세제곱수 사이',make:n=>{let k=Math.floor(Math.cbrt(n));return `<strong>${k}³</strong> 이상 <strong>${k+1}³</strong> 미만이다.`},key:n=>Math.floor(Math.cbrt(n))},
+ {id:'binaryLen',name:'2진수의 길이',make:n=>`2진수로 쓰면 <strong>${n.toString(2).length}자리</strong>다.`,key:n=>n.toString(2).length},
+ {id:'binaryOnes',name:'2진수의 1 개수',make:n=>`2진수로 썼을 때 <strong>1이 ${[...n.toString(2)].filter(x=>x==='1').length}개</strong>다.`,key:n=>[...n.toString(2)].filter(x=>x==='1').length},
+ {id:'palindrome',name:'거꾸로 읽기',make:n=>String(n)===String(n).split('').reverse().join('')?`앞에서 읽어도 뒤에서 읽어도 <strong>같다</strong>.`:`앞뒤가 <strong>서로 다른 수</strong>다.`,key:n=>String(n)===String(n).split('').reverse().join('')},
+ {id:'firstlast',name:'첫 자리와 끝 자리',make:n=>`첫 자리와 마지막 자리의 차가 <strong>${Math.abs(Number(String(n)[0])-Number(String(n).at(-1)))}</strong>이다.`,key:n=>Math.abs(Number(String(n)[0])-Number(String(n).at(-1)))},
+ {id:'ascending',name:'자리 숫자의 흐름',make:n=>{let d=String(n).split('').map(Number);return d.length<2?'한 자리 숫자다.':d.every((x,i)=>i===0||x>x-1)?'자리 숫자가 왼쪽에서 오른쪽으로 <strong>엄격하게 증가</strong>한다.':d.every((x,i)=>i===0||x<x-1)?'자리 숫자가 왼쪽에서 오른쪽으로 <strong>엄격하게 감소</strong>한다.':'자리 숫자가 한 방향으로만 움직이지 않는다.'},key:n=>{let d=String(n).split('').map(Number);return d.length<2?'one':d.every((x,i)=>i===0||x>d[i-1])?'up':d.every((x,i)=>i===0||x<d[i-1])?'down':'mixed'}},
+ {id:'multiple5',name:'5의 배수와의 거리',make:n=>`가장 가까운 5의 배수까지의 거리가 <strong>${Math.min(n%5,5-n%5)}</strong>이다.`,key:n=>Math.min(n%5,5-n%5)},
+ {id:'multiple10',name:'10의 배수와의 거리',make:n=>`가장 가까운 10의 배수까지의 거리가 <strong>${Math.min(n%10,10-n%10)}</strong>이다.`,key:n=>Math.min(n%10,10-n%10)},
+ {id:'multiple25',name:'25의 배수와의 거리',make:n=>`가장 가까운 25의 배수까지의 거리가 <strong>${Math.min(n%25,25-n%25)}</strong>이다.`,key:n=>Math.min(n%25,25-n%25)},
+ {id:'primeDistance',name:'가까운 소수',make:n=>{let a=nearestPrimeDown(n),b=nearestPrimeUp(n);return `아래쪽 가장 가까운 소수까지 <strong>${n-a}</strong>, 위쪽 가장 가까운 소수까지 <strong>${b-n}</strong> 차이다.`},key:n=>{let a=nearestPrimeDown(n),b=nearestPrimeUp(n);return `${n-a},${b-n}`}},
+ {id:'factorPrimeCount',name:'소수인 약수',make:n=>`약수 중 소수가 <strong>${divisors(n).filter(isPrime).length}개</strong>다.`,key:n=>divisors(n).filter(isPrime).length},
+ {id:'evenFactors',name:'짝수인 약수',make:n=>`짝수인 약수가 <strong>${divisors(n).filter(x=>x%2===0).length}개</strong>다.`,key:n=>divisors(n).filter(x=>x%2===0).length},
+ {id:'oddFactors',name:'홀수인 약수',make:n=>`홀수인 약수가 <strong>${divisors(n).filter(x=>x%2).length}개</strong>다.`,key:n=>divisors(n).filter(x=>x%2).length},
+ {id:'power2',name:'2의 거듭제곱과의 관계',make:n=>{let k=0,x=n;while(x%2===0&&x>0){k++;x/=2}return `2로 나누어떨어지는 횟수가 <strong>${k}번</strong>이다.`},key:n=>{let k=0,x=n;while(x%2===0&&x>0){k++;x/=2}return k}},
+ {id:'range100',name:'백 단위 구간',make:n=>{let a=Math.floor((n-1)/100)*100+1;return `<strong>${a}~${a+99}</strong> 사이에 있다.`},key:n=>Math.floor((n-1)/100)},
+ {id:'range50',name:'50 단위 구간',make:n=>{let a=Math.floor((n-1)/50)*50+1;return `<strong>${a}~${a+49}</strong> 사이에 있다.`},key:n=>Math.floor((n-1)/50)},
+ {id:'range20',name:'20 단위 구간',make:n=>{let a=Math.floor((n-1)/20)*20+1;return `<strong>${a}~${a+19}</strong> 사이에 있다.`},key:n=>Math.floor((n-1)/20)},
+ {id:'digitlength',name:'몇 자리 숫자인가',make:n=>`정답은 <strong>${String(n).length}자리 숫자</strong>다.`,key:n=>String(n).length}
+];
+
+function buildHints(){
+  // 힌트 후보가 너무 공격적이거나 후보를 거의 줄이지 못하는 경우를 자동 배제한다.
+  let candidates=Array.from({length:1000},(_,i)=>i+1);
+  let pool=[...makers].sort(()=>Math.random()-0.5);
+  let chosen=[];
+
+  for(let stage=0;stage<6;stage++){
+    let viable=[];
+    for(const h of pool){
+      if(chosen.some(x=>x.id===h.id))continue;
+      const k=h.key(target);
+      const next=candidates.filter(n=>String(h.key(n))===String(k));
+      const ratio=next.length/candidates.length;
+
+      // 한 단계에서 너무 조금 줄거나, 1개로 확정해버리는 힌트는 제거.
+      if(next.length<2)continue;
+      if(ratio>=0.92)continue;
+      if(stage>=4 && next.length>8)continue;
+      viable.push({h,next,ratio});
+    }
+
+    if(!viable.length)break;
+
+    // 마지막에 가까울수록 후보를 줄이되 2~7개는 남기도록 선호.
+    viable.sort((a,b)=>{
+      const score=x=>{
+        if(stage>=4)return Math.abs(Math.min(7,Math.max(2,x.next.length))-x.next.length);
+        return Math.abs(x.next.length-(stage===0?120:stage===1?45:stage===2?18:8));
+      };
+      return score(a)-score(b)+Math.random()*.8;
+    });
+
+    const pick=viable[Math.floor(Math.random()*Math.min(4,viable.length))];
+    chosen.push(pick.h);
+    candidates=pick.next;
+  }
+
+  // 6개가 안 나오면 일반적인 약한 힌트를 보충하되, 마지막은 반드시 2개 이상.
+  if(chosen.length<6){
+    const fallback=pool.filter(h=>!chosen.some(x=>x.id===h.id));
+    for(const h of fallback){
+      if(chosen.length>=6)break;
+      const next=candidates.filter(n=>String(h.key(n))===String(h.key(target)));
+      if(next.length>=2 && next.length<candidates.length){chosen.push(h);candidates=next;}
+    }
+  }
+  return chosen;
+}
+
+function start(){
+  target=rand(1,1000);wrong=0;guesses=[];finished=false;
+  hints=buildHints();
+  // 혹시 드문 경우 6개 미만이면 다시 뽑는다.
+  if(hints.length<6) hints=buildHints();
+  $('#n-guess').value='';$('#n-message').textContent='';
+  renderProgress();renderHints();renderHistory();
+  $('#n-submit').disabled=false;$('#n-guess').disabled=false;
+  show('#n-play');$('#n-guess').focus();
+}
+function renderProgress(){$('#n-progress').innerHTML=Array.from({length:6},(_,i)=>`<div class="n-dot ${i===0?'open':''} ${i<wrong?'used':''}"></div>`).join('')}
+function renderHints(){
+  $('#n-hints').innerHTML=hints.map((h,i)=>{
+    const open=i<=wrong;
+    return `<div class="n-hint ${open?'':'locked'}"><div class="n-hint-head"><span class="n-hint-step">Hint ${i}</span><span class="n-hint-name">${open?h.name:'LOCKED'}</span></div><div class="n-hint-text">${open?h.make(target):'한 번 더 틀리면 이 힌트가 공개됩니다.'}</div></div>`
+  }).join('')
+}
+function renderHistory(){$('#n-history-list').innerHTML=guesses.length?guesses.map(g=>`<span class="n-guess-chip">${g}</span>`).join(''):'<span class="n-guess-chip">No guesses yet</span>'}
+function submit(){
+  if(finished)return;
+  const value=Number($('#n-guess').value);
+  if(!Number.isInteger(value)||value<1||value>1000){$('#n-message').textContent='1부터 1000 사이의 정수를 입력하세요.';return}
+  if(guesses.includes(value)){$('#n-message').textContent='이미 추측한 숫자입니다.';return}
+  guesses.push(value);renderHistory();
+  if(value===target){finish(true,value);return}
+  wrong++;renderProgress();renderHints();
+  if(wrong>=6){finish(false,value);return}
+  $('#n-message').textContent=`아쉽습니다. 정답은 ${value<target?'더 큰':'더 작은'} 수입니다.`;
+  $('#n-guess').select();
+}
+function finish(win,last){
+  finished=true;$('#n-submit').disabled=true;$('#n-guess').disabled=true;
+  if(win){
+    const grade=wrong===0?'V':wrong===1?'S':wrong===2?'A':wrong===3?'B':wrong===4?'C':'D';
+    $('#n-result-box').innerHTML=`<div class="n-result-text">정답을 찾아냈습니다!</div><div class="n-result-big">${target}</div><div class="n-result-grade">등급 ${grade}</div><div class="n-result-text">${wrong===0?'첫 시도에 정답!':`${wrong+1}번 만에 정답을 찾았습니다.`}</div><button class="n-again" type="button" id="n-retry">다시 하기</button>`;
+  }else{
+    $('#n-result-box').innerHTML=`<div class="n-result-text">6개의 힌트를 모두 확인했지만 정답을 찾지 못했습니다.</div><div class="n-result-big">${target}</div><div class="n-result-grade">FAIL</div><div class="n-result-text">마지막 추측은 ${last}였습니다.</div><button class="n-again" type="button" id="n-retry">다시 하기</button>`;
+  }
+  $('#n-retry').addEventListener('click',start);show('#n-result-screen');
+}
+$('#n-start').addEventListener('click',start);
+$('#n-submit').addEventListener('click',submit);
+$('#n-guess').addEventListener('keydown',e=>{if(e.key==='Enter')submit()});
+})();
+</script></div>
