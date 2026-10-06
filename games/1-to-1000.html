@@ -5,7 +5,7 @@
 #n1000-game .n-title{text-align:center;font-size:36px;font-weight:800;margin:4px 0 8px}#n1000-game .n-sub{text-align:center;color:#999;font-size:14px;margin-bottom:22px}
 #n1000-game .n-progress{display:flex;gap:6px;justify-content:center;margin:0 auto 22px}.n-dot{width:42px;height:7px;border-radius:99px;background:#292929}.n-dot.open{background:#aaa}.n-dot.used{background:#fff}
 #n1000-game .n-hints{display:flex;flex-direction:column;gap:9px}.n-hint{border:1px solid #333;background:#191919;border-radius:12px;padding:14px 16px}
-.n-hint-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px}.n-hint-step{font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.08em}.n-hint-name{font-weight:700;font-size:15px}.n-hint-text{font-size:14px;line-height:1.55;color:#ddd}.n-hint.locked{opacity:.72}.n-hint.locked .n-hint-text{color:#666}
+.n-hint-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:7px;min-height:42px}.n-hint-step{font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.08em}.n-hint-right{text-align:right;min-width:0}.n-hint-name{font-weight:700;font-size:15px}.n-hint-meta{height:17px;margin-top:4px;font-size:11px;color:#888;letter-spacing:.03em}.n-hint-text{font-size:14px;line-height:1.55;color:#ddd}.n-hint.locked{opacity:.72}.n-hint.locked .n-hint-text{color:#666}
 .n-input-wrap{display:flex;gap:8px;margin-top:20px}#n-guess{flex:1;min-width:0;border:1px solid #444;border-radius:9px;background:#111;color:#fff;padding:13px 14px;font-size:18px;outline:none}#n-guess:focus{border-color:#aaa}
 #n-submit,.n-again{border:1px solid #fff;border-radius:9px;background:#fff;color:#111;padding:12px 18px;font-weight:800;cursor:pointer}#n-submit:disabled{opacity:.35;cursor:not-allowed}
 .n-message{text-align:center;min-height:22px;margin-top:10px;font-size:13px;color:#aaa}.n-history{margin-top:18px;border-top:1px solid #292929;padding-top:14px}.n-history-title{font-size:11px;color:#777;margin-bottom:7px}.n-history-list{display:flex;flex-wrap:wrap;gap:6px}.n-guess-chip{border:1px solid #333;background:#181818;border-radius:7px;padding:6px 9px;font-size:12px;color:#aaa}
@@ -112,7 +112,7 @@ function buildHints(){
     });
 
     const pick=viable[Math.floor(Math.random()*Math.min(4,viable.length))];
-    chosen.push(pick.h);
+    chosen.push({...pick.h, rest: pick.next.length});
     candidates=pick.next;
   }
 
@@ -122,7 +122,7 @@ function buildHints(){
     for(const h of fallback){
       if(chosen.length>=6)break;
       const next=candidates.filter(n=>String(h.key(n))===String(h.key(target)));
-      if(next.length>=2 && next.length<candidates.length){chosen.push(h);candidates=next;}
+      if(next.length>=2 && next.length<candidates.length){chosen.push({...h, rest: next.length});candidates=next;}
     }
   }
   return chosen;
@@ -142,7 +142,7 @@ function renderProgress(){$('#n-progress').innerHTML=Array.from({length:6},(_,i)
 function renderHints(){
   $('#n-hints').innerHTML=hints.map((h,i)=>{
     const open=i<=wrong;
-    return `<div class="n-hint ${open?'':'locked'}"><div class="n-hint-head"><span class="n-hint-step">Hint ${i}</span><span class="n-hint-name">${open?h.name:'LOCKED'}</span></div><div class="n-hint-text">${open?h.make(target):'한 번 더 틀리면 이 힌트가 공개됩니다.'}</div></div>`
+    return `<div class="n-hint ${open?'':'locked'}"><div class="n-hint-head"><div class="n-hint-step">Hint ${i}</div><div class="n-hint-right"><div class="n-hint-name">${open?h.name:'LOCKED'}</div><div class="n-hint-meta">${open?`rest: ${h.rest}`:'rest: —'}</div></div></div><div class="n-hint-text">${open?h.make(target):'한 번 더 틀리면 이 힌트가 공개됩니다.'}</div></div>`
   }).join('')
 }
 function renderHistory(){$('#n-history-list').innerHTML=guesses.length?guesses.map(g=>`<span class="n-guess-chip">${g}</span>`).join(''):'<span class="n-guess-chip">No guesses yet</span>'}
@@ -155,7 +155,6 @@ function submit(){
   if(value===target){finish(true,value);return}
   wrong++;renderProgress();renderHints();
   if(wrong>=6){finish(false,value);return}
-  <!--$('#n-message').textContent=`아쉽습니다. 정답은 ${value<target?'더 큰':'더 작은'} 수입니다.`;-->
   $('#n-guess').select();
 }
 function finish(win,last){
