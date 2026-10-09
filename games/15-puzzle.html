@@ -27,7 +27,29 @@ function stop(){if(timer!==null){clearInterval(timer);timer=null}}
 function startClock(){if(timer!==null||finished)return;timer=setInterval(()=>{if(started&&!finished){seconds++;$('#time').textContent=fmt(seconds)}},1000)}
 function begin(n){size=n;moves=0;seconds=0;started=false;finished=false;stop();tiles=shuffle();menu.classList.add('hide');play.classList.remove('hide');overlay.classList.add('hide');$('#sizeLabel').textContent=size+' × '+size;stats();render()}
 function move(i){if(finished||!tiles[i])return;let z=tiles.indexOf(0);if(!near(i,z))return;if(!started){started=true;startClock()}[tiles[i],tiles[z]]=[tiles[z],tiles[i]];moves++;stats();render();if(solved(tiles))complete()}
-function scoring(){let optimal=size*size-1,budget=size===4?120:size===5?300:600,mr=optimal/Math.max(optimal,moves),tr=budget/(budget+seconds),score=Math.max(0,Math.round(1000*(.65*mr+.35*tr))),grade=score>=950?'S':score>=850?'A':score>=700?'B':score>=500?'C':score>=300?'D':'E';return{score,grade}}
+function scoring(){
+    // 난이도별 기준 이동 횟수와 시간(초)
+    let moveBudget = size === 4 ? 180 : size === 5 ? 450 : 900;
+    let timeBudget = size === 4 ? 180 : size === 5 ? 420 : 720;
+
+    // 기준 이동 횟수 이내라면 이동 점수 만점
+    let mr = Math.min(1, moveBudget / Math.max(moveBudget, moves));
+
+    // 시간이 기준보다 길어져도 점수가 완만하게 감소
+    let tr = timeBudget / (timeBudget + Math.max(0, seconds));
+
+    // 이동 60%, 시간 40%
+    let score = Math.round(1000 * (0.6 * mr + 0.4 * tr));
+
+    let grade =
+        score >= 950 ? 'S' :
+        score >= 850 ? 'A' :
+        score >= 700 ? 'B' :
+        score >= 500 ? 'C' :
+        score >= 300 ? 'D' : 'E';
+
+    return {score, grade};
+}
 function complete(){finished=true;stop();render();let r=scoring();$('#grade').textContent=r.grade;$('#score').textContent='Score: '+r.score.toLocaleString();$('#rtime').textContent=fmt(seconds);$('#rmoves').textContent=moves;let b=getBest(size);if(!b||r.score>b.score){putBest(size,{score:r.score,grade:r.grade,time:fmt(seconds),moves});renderBest()}overlay.classList.remove('hide')}
 function showMenu(){stop();overlay.classList.add('hide');play.classList.add('hide');menu.classList.remove('hide');renderBest()}
 root.querySelectorAll('.mode').forEach(b=>b.addEventListener('click',()=>begin(+b.dataset.size)));
